@@ -1,0 +1,55 @@
+.container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .card {
+    background: var(--card);
+    padding: 20px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+  }
+  
+  .inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  
+  .inputGroup input {
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    outline: none;
+  }
+  
+  .exerciseItem {
+    background: #f9fafb;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid var(--border);
+  }
+  
+  .btnRemove {
+    color: var(--danger);
+    background: none;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  
+  .btnSave {
+    width: 100%;
+    padding: 16px;
+    background: var(--primary);
+    color: white;
+    font-weight: 700;
+    border-radius: var(--radius);
+    margin-top: 20px;
+  }

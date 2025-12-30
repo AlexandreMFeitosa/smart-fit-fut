@@ -1,0 +1,16 @@
+:root {
+    --primary: #1f7a3d;     /* verde treino */
+    --primary-dark: #176633;
+    --secondary: #2563eb;   /* azul */
+    --danger: #dc2626;
+  
+    --bg: #f5f6f8;
+    --card: #ffffff;
+    --border: #e5e7eb;
+    --text: #1f2937;
+    --muted: #6b7280;
+  
+    --radius: 14px;
+    --shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  }
+  

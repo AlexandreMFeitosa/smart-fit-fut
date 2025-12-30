@@ -1,0 +1,65 @@
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+}
+
+/* TOPO */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #222;
+}
+
+.count {
+  font-size: 0.8rem;
+  color: #777;
+}
+
+/* AÇÕES */
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.actions button {
+  flex: 1;
+  padding: 12px 0;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+
+/* BOTÕES */
+.start {
+  background: #1f7a3d;
+  color: white;
+}
+
+.start:active {
+  background: #17612f;
+}
+
+.edit {
+  background: #e9ecef;
+  color: #333;
+}
+
+.delete {
+  background: #ffe5e5;
+  color: #b00020;
+}

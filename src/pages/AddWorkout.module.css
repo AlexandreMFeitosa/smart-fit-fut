@@ -1,0 +1,97 @@
+.container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  
+  .card {
+    background: var(--card);
+    padding: 20px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+  }
+  
+  .inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  
+  .inputGroup label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  
+  .inputGroup input {
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  
+  .inputGroup input:focus {
+    border-color: var(--primary);
+  }
+  
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  
+  .btnAddExercise {
+    width: 100%;
+    padding: 12px;
+    background: var(--secondary); /* Azul para diferenciar da ação principal */
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+    margin-top: 8px;
+  }
+  
+  .list {
+    list-style: none;
+    margin-top: 16px;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+  
+  .exerciseItem {
+    background: #f9fafb;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .btnSave {
+    width: 100%;
+    padding: 16px;
+    background: var(--primary);
+    color: white;
+    font-weight: 700;
+    font-size: 18px;
+    border-radius: var(--radius);
+    box-shadow: 0 4px 12px rgba(31, 122, 61, 0.2);
+    margin-top: 10px;
+  }
+  
+  .btnSave:disabled {
+    background: var(--muted);
+    cursor: not-allowed;
+  }

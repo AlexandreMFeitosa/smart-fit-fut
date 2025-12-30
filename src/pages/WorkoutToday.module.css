@@ -1,0 +1,48 @@
+.container {
+    min-height: 100vh;
+    background: #f4f6f8;
+    padding: 24px;
+    text-align: center;
+  }
+  
+  .title {
+    font-size: 26px;
+    font-weight: bold;
+    margin-bottom: 12px;
+  }
+  
+  .subtitle {
+    margin-bottom: 20px;
+    color: #555;
+  }
+  
+  .primary {
+    background: #1f7a3d;
+    color: white;
+    border: none;
+    padding: 14px 24px;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  
+  .card {
+    background: white;
+    padding: 16px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  }
+  
+  .secondary {
+    margin-top: 12px;
+    padding: 8px 14px;
+    background-color: #e5e7eb;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  .secondary:hover {
+    background-color: #d1d5db;
+  }
+  

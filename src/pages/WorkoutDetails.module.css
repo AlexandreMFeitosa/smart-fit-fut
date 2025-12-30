@@ -1,0 +1,38 @@
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .title {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .exercise {
+    background: #f5f5f5;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+  }
+  
+  .sub {
+    display: block;
+    font-size: 14px;
+    color: #666;
+    margin-top: 4px;
+  }
+  
+  .secondary {
+    margin-top: 20px;
+    padding: 10px 16px;
+    border-radius: 6px;
+    border: none;
+    background: #ddd;
+    cursor: pointer;
+  }  
