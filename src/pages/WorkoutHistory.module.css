@@ -30,6 +30,7 @@
   font-weight: 600;
   font-size: 14px;
   cursor: default;
+  transition: all 0.2s ease;
 }
 
 .hasWorkout {
@@ -64,4 +65,30 @@
   margin-bottom: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
   font-weight: 500;
+  color: #334155;
+}
+
+/* --- ESTILOS ADICIONADOS PARA O LOADING --- */
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: var(--primary);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { Workout, Exercise } from "../types/workout";
-import { getWorkouts, updateWorkout } from "../services/storage";
+import { db } from "../firebase"; // Importando sua conexão Firebase
+import { ref, get, update } from "firebase/database"; // Métodos do Realtime Database
 import { v4 as uuid } from "uuid";
 import styles from "./EditWorkout.module.css";
 
@@ -10,22 +11,36 @@ export function EditWorkout() {
   const navigate = useNavigate();
 
   const [workout, setWorkout] = useState<Workout | null>(null);
+  const [loading, setLoading] = useState(true);
   
-  // Estados para o formulário de novo exercício
   const [exerciseName, setExerciseName] = useState("");
   const [substitute, setSubstitute] = useState("");
   const [series, setSeries] = useState(3);
   const [reps, setReps] = useState(12);
 
   useEffect(() => {
-    const workouts = getWorkouts();
-    const foundWorkout = workouts.find((w) => w.id === id);
+    async function fetchWorkout() {
+      if (!id) return;
 
-    if (!foundWorkout) {
-      navigate("/");
-      return;
+      try {
+        // BUSCANDO NO FIREBASE PELO ID
+        const workoutRef = ref(db, `treinos/${id}`);
+        const snapshot = await get(workoutRef);
+
+        if (snapshot.exists()) {
+          setWorkout({ id, ...snapshot.val() } as Workout);
+        } else {
+          // Se não achar o treino na nuvem, volta para a home
+          navigate("/");
+        }
+      } catch (error) {
+        console.error("Erro ao buscar treino:", error);
+      } finally {
+        setLoading(false);
+      }
     }
-    setWorkout(foundWorkout);
+
+    fetchWorkout();
   }, [id, navigate]);
 
   function handleAddExercise() {
@@ -61,7 +76,27 @@ export function EditWorkout() {
     });
   }
 
-  if (!workout) return <div className="app-container">Carregando treino...</div>;
+  async function handleUpdateWorkout() {
+    if (!workout || !id) return;
+
+    try {
+      const workoutRef = ref(db, `treinos/${id}`);
+      // ATUALIZANDO NA NUVEM
+      await update(workoutRef, {
+        name: workout.name,
+        exercises: workout.exercises
+      });
+
+      alert("Treino atualizado com sucesso!");
+      navigate("/treinos");
+    } catch (error) {
+      console.error("Erro ao atualizar:", error);
+      alert("Erro ao salvar alterações.");
+    }
+  }
+
+  if (loading) return <div className="app-container">Carregando dados da nuvem...</div>;
+  if (!workout) return null;
 
   return (
     <div className="app-container">
@@ -114,7 +149,6 @@ export function EditWorkout() {
         </div>
 
         <h3 style={{marginTop: '20px'}}>Exercícios Atuais</h3>
-        {workout.exercises.length === 0 && <p>Nenhum exercício adicionado.</p>}
         {workout.exercises.map((ex) => (
           <div key={ex.id} className={styles.exerciseItem}>
             <div>
@@ -129,10 +163,7 @@ export function EditWorkout() {
           </div>
         ))}
 
-        <button className={styles.btnSave} onClick={() => {
-          updateWorkout(workout);
-          navigate("/");
-        }}>
+        <button className={styles.btnSave} onClick={handleUpdateWorkout}>
           Salvar Alterações do Treino
         </button>
       </div>

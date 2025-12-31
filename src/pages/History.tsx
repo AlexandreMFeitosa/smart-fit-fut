@@ -1,44 +1,71 @@
 import { useEffect, useState } from "react";
-import { getLogs } from "../services/storage";
-import type { WorkoutLog, Workout } from "../types/workout";
+import { db } from "../firebase";
+import { ref, get } from "firebase/database";
+import styles from "./WorkoutHistory.module.css"; // Verifique se o nome do arquivo CSS está correto como na sua pasta
 
 export function History() {
-  const [logs, setLogs] = useState<WorkoutLog[]>([]);
-  const [workouts, setWorkouts] = useState<Workout[]>([]);
+  const [logs, setLogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLogs(getLogs());
-    // Replace this with the actual logic to fetch workouts
-    setWorkouts([]); // Example: Replace with fetched workouts
+    async function fetchHistory() {
+      const logsRef = ref(db, "logs");
+      const snapshot = await get(logsRef);
+      
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        // Converte o objeto do Firebase em Array e ordena pelo mais recente
+        const logsArray = Object.entries(data).map(([id, value]: [string, any]) => ({
+          id,
+          ...value
+        })).reverse();
+        
+        setLogs(logsArray);
+      }
+      setLoading(false);
+    }
+    fetchHistory();
   }, []);
 
-  function getWorkoutName(workoutId: string) {
-    const workout = workouts.find((w) => w.id === workoutId);
-    return workout ? workout.name : "Você já realizou este treino hoje.";
+  if (loading) {
+    return (
+      <div className="app-container">
+        <div className={styles.loadingBarContainer}>
+          <div className={styles.loadingBar}></div>
+          <p>Carregando histórico da nuvem...</p>
+        </div>
+      </div>
+    );
   }
 
-  const currentMonth = new Date().toISOString().slice(0, 7);
-
-  const monthlyCount = logs.filter((log) =>
-    log.date.startsWith(currentMonth)
-  ).length;
-
   return (
-    <div>
-      <h2>Histórico de Treinos</h2>
-      <p>
-        Esse mês você ja realizou : <strong>{monthlyCount}</strong> treinos !
-      </p>
-
-      {logs.length === 0 && <p>Nenhum treino realizado ainda.</p>}
-
-      <ul>
-        {logs.map((log, index) => (
-          <li key={index}>
-            {log.date} — {getWorkoutName(log.workoutId)}
-          </li>
-        ))}
-      </ul>
+    <div className="app-container">
+      <h1 className={styles.title}>Histórico de Treinos</h1>
+      
+      {logs.length === 0 ? (
+        <p>Nenhum treino finalizado encontrado.</p>
+      ) : (
+        <div className={styles.list}>
+          {logs.map((log) => (
+            <div key={log.id} className={styles.card}>
+              <div className={styles.header}>
+                <strong>{log.workoutName}</strong>
+                {/* Ajuste de fuso horário manual para exibição */}
+                <span>{new Date(log.date + "T12:00:00").toLocaleDateString('pt-BR')}</span>
+              </div>
+              
+              <div className={styles.details}>
+                {Object.values(log.exercises || {}).map((ex: any) => (
+                  <div key={ex.id} className={styles.exerciseRow}>
+                    <span>{ex.name || "Exercício"}</span>
+                    <span>{ex.weight}kg | {ex.completedSeries?.length || 0} séries</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
