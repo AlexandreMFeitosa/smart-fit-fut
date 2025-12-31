@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import type { Exercise, Workout } from "../types/workout";
-import { getWorkouts, saveWorkouts } from "../services/storage";
+import type { Exercise } from "../types/workout";
+import { db } from "../firebase"; // Sua conexão configurada
+import { ref, push, set } from "firebase/database"; // Imports corrigidos para Realtime
 import { v4 as uuid } from "uuid";
-import styles from "./AddWorkout.module.css"; // Importando o CSS
+import styles from "./AddWorkout.module.css";
 
 export function AddWorkout() {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ export function AddWorkout() {
   const [substitute, setSubstitute] = useState("");
   const [series, setSeries] = useState(3);
   const [reps, setReps] = useState(12);
+  const [isSaving, setIsSaving] = useState(false);
 
   function handleAddExercise() {
     if (!exerciseName.trim() || !substitute.trim()) {
@@ -21,12 +23,14 @@ export function AddWorkout() {
       return;
     }
 
-    const newExercise: Exercise = {
+    // Já deixamos o campo 'lastWeight' pronto para a Linha Amarela
+    const newExercise: any = {
       id: uuid(),
       name: exerciseName,
       substitute,
       series: Number(series),
       reps: Number(reps),
+      lastWeight: "" 
     };
 
     setExercises((prev) => [...prev, newExercise]);
@@ -34,21 +38,32 @@ export function AddWorkout() {
     setSubstitute("");
   }
 
-  function handleSaveWorkout() {
+  async function handleSaveWorkout() {
     if (!name.trim() || exercises.length === 0) {
-      alert("Dê um nome ao treino e adicione exercícios.");
+      alert("Adicione um nome e ao menos um exercício.");
       return;
     }
 
-    const newWorkout: Workout = {
-      id: uuid(),
-      name,
-      exercises,
-    };
+    setIsSaving(true);
+    try {
+      // Referência para a pasta 'treinos' no Realtime Database
+      const workoutsRef = ref(db, 'treinos');
+      const newWorkoutRef = push(workoutsRef); 
+      
+      await set(newWorkoutRef, {
+        name,
+        exercises,
+        createdAt: new Date().toISOString()
+      });
 
-    const stored = getWorkouts();
-    saveWorkouts([...stored, newWorkout]);
-    navigate("/");
+      alert("Treino salvo na nuvem!");
+      navigate("/");
+    } catch (error) {
+      console.error("Erro ao salvar:", error);
+      alert("Falha ao salvar. Verifique o console.");
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -115,10 +130,16 @@ export function AddWorkout() {
           </ul>
         </div>
 
-        <button className={styles.btnSave} onClick={handleSaveWorkout}>
-          Salvar Treino Completo
+        <button 
+          className={styles.btnSave} 
+          onClick={handleSaveWorkout}
+          disabled={isSaving}
+        >
+          {isSaving ? "Salvando..." : "Salvar Treino Completo"}
         </button>
       </div>
     </div>
   );
 }
+
+export default AddWorkout;
