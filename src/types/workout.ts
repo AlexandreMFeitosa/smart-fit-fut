@@ -4,6 +4,8 @@ export interface Exercise {
   substitute: string
   series: number
   reps: number
+  weight: number; // Novo campo
+  rest: number;   // Novo campo (em segundos)
 }
 
 export interface Workout {

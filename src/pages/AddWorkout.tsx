@@ -16,6 +16,8 @@ export function AddWorkout() {
   const [series, setSeries] = useState(3);
   const [reps, setReps] = useState(12);
   const [isSaving, setIsSaving] = useState(false);
+  const [weight, setWeight] = useState(0);
+  const [rest, setRest] = useState(60); // Padrão 60s
 
   function handleAddExercise() {
     if (!exerciseName.trim() || !substitute.trim()) {
@@ -30,12 +32,15 @@ export function AddWorkout() {
       substitute,
       series: Number(series),
       reps: Number(reps),
-      lastWeight: "" 
+      weight: Number(weight), // Salvando o peso
+      rest: Number(rest), // Salvando o descanso
+      lastWeight: "",
     };
 
     setExercises((prev) => [...prev, newExercise]);
     setExerciseName("");
     setSubstitute("");
+    setWeight(0);
   }
 
   async function handleSaveWorkout() {
@@ -47,13 +52,13 @@ export function AddWorkout() {
     setIsSaving(true);
     try {
       // Referência para a pasta 'treinos' no Realtime Database
-      const workoutsRef = ref(db, 'treinos');
-      const newWorkoutRef = push(workoutsRef); 
-      
+      const workoutsRef = ref(db, "treinos");
+      const newWorkoutRef = push(workoutsRef);
+
       await set(newWorkoutRef, {
         name,
         exercises,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       });
 
       alert("Treino salvo na nuvem!");
@@ -115,6 +120,23 @@ export function AddWorkout() {
                 onChange={(e) => setReps(Number(e.target.value))}
               />
             </div>
+            <div className={styles.inputGroup}>
+              <label>Peso (kg)</label>
+              <input
+                type="number"
+                value={weight}
+                onChange={(e) => setWeight(Number(e.target.value))}
+              />
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label>Descanso (segundos)</label>
+              <input
+                type="number"
+                value={rest}
+                onChange={(e) => setRest(Number(e.target.value))}
+              />
+            </div>
           </div>
           <button className={styles.btnAddExercise} onClick={handleAddExercise}>
             + Incluir na lista
@@ -123,15 +145,17 @@ export function AddWorkout() {
           <ul className={styles.list}>
             {exercises.map((ex) => (
               <li key={ex.id} className={styles.exerciseItem}>
-                <span>{ex.name} - {ex.series}x{ex.reps}</span>
-                <small style={{color: 'var(--muted)'}}>{ex.substitute}</small>
+                <span>
+                  {ex.name} - {ex.series}x{ex.reps}
+                </span>
+                <small style={{ color: "var(--muted)" }}>{ex.substitute}</small>
               </li>
             ))}
           </ul>
         </div>
 
-        <button 
-          className={styles.btnSave} 
+        <button
+          className={styles.btnSave}
           onClick={handleSaveWorkout}
           disabled={isSaving}
         >

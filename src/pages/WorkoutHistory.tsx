@@ -20,7 +20,7 @@ export function WorkoutHistory() {
   const month = today.getMonth();
 
   // Formata hoje como YYYY-MM-DD respeitando o fuso local
-  const todayKey = today.toLocaleDateString('en-CA'); // Gera "2025-12-30"
+  const todayKey = today.toLocaleDateString("en-CA"); // Gera "2025-12-30"
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   useEffect(() => {
@@ -34,8 +34,10 @@ export function WorkoutHistory() {
           const logsArray = Object.values(data) as WorkoutLog[];
 
           const grouped = logsArray.reduce((acc: LogsByDate, log) => {
-            if (!acc[log.date]) acc[log.date] = [];
-            acc[log.date].push(log);
+            // Extrai apenas a data (YYYY-MM-DD) do ISOString salvo
+            const dateKey = log.date.split("T")[0];
+            if (!acc[dateKey]) acc[dateKey] = [];
+            acc[dateKey].push(log);
             return acc;
           }, {});
 
@@ -47,7 +49,6 @@ export function WorkoutHistory() {
         setLoading(false);
       }
     }
-
     fetchLogs();
   }, []);
 
@@ -70,7 +71,10 @@ export function WorkoutHistory() {
         <div className={styles.calendar}>
           {Array.from({ length: daysInMonth }, (_, i) => {
             const day = i + 1;
-            const dateKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+            const dateKey = `${year}-${String(month + 1).padStart(
+              2,
+              "0"
+            )}-${String(day).padStart(2, "0")}`;
 
             const hasWorkout = !!logsByDate[dateKey];
 
