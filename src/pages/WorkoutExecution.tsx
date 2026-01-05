@@ -20,14 +20,18 @@ export function WorkoutExecution() {
   // 1. Busca inicial do treino no Firebase
   useEffect(() => {
     async function fetchWorkout() {
-      const workoutRef = ref(db, `treinos/${id}`);
-      const snapshot = await get(workoutRef);
-      if (snapshot.exists()) setWorkout(snapshot.val());
+      try {
+        const workoutRef = ref(db, `treinos/${id}`);
+        const snapshot = await get(workoutRef);
+        if (snapshot.exists()) setWorkout(snapshot.val());
+      } catch (err) {
+        console.error("Erro ao buscar treino:", err);
+      }
     }
     fetchWorkout();
   }, [id]);
 
-  // 2. RECUPERAÇÃO: Ao carregar a página, busca o progresso salvo no celular
+  // 2. RECUPERAÇÃO: Ao carregar, busca o progresso salvo no celular
   useEffect(() => {
     const saved = localStorage.getItem(`workout_progress_${id}`);
     if (saved) {
@@ -35,7 +39,7 @@ export function WorkoutExecution() {
     }
   }, [id]);
 
-  // 3. PERSISTÊNCIA: Sempre que mudar uma marcação, salva no LocalStorage
+  // 3. PERSISTÊNCIA: Salva no LocalStorage a cada mudança
   useEffect(() => {
     if (Object.keys(completedSets).length > 0) {
       localStorage.setItem(`workout_progress_${id}`, JSON.stringify(completedSets));
@@ -57,25 +61,39 @@ export function WorkoutExecution() {
   }, [isActive, timer]);
 
   function handleTimerEnd() {
+    // Atualiza o estado primeiro para liberar a interface
     setIsActive(false);
     setTimer(null);
     setActiveExerciseId(null);
 
-    // Proteção com try/catch para evitar tela branca no Android ao tocar som
-    try {
-      const beep = new Audio(
-        "https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
-      );
-      beep.play().catch(() => console.log("Áudio bloqueado pelo navegador até interação."));
-    } catch (e) {
-      console.error("Erro ao processar áudio:", e);
-    }
+    // Executa áudio e notificação fora da thread principal para evitar tela branca
+    setTimeout(() => {
+      try {
+        const beep = new Audio(
+          "https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
+        );
+        const playPromise = beep.play();
 
-    if (Notification.permission === "granted") {
-      new Notification("Smart Fit Fut", {
-        body: "Descanso acabou! Próxima série!",
-      });
-    }
+        if (playPromise !== undefined) {
+          playPromise.catch((err) => {
+            console.warn("Áudio impedido pelo navegador:", err);
+          });
+        }
+      } catch (err) {
+        console.error("Falha no áudio:", err);
+      }
+
+      try {
+        if ("Notification" in window && Notification.permission === "granted") {
+          new Notification("Smart Fit Fut", {
+            body: "Descanso acabou! Próxima série!",
+            silent: true,
+          });
+        }
+      } catch (err) {
+        console.error("Erro na notificação:", err);
+      }
+    }, 0);
   }
 
   const toggleExerciseFull = (exerciseId: string, totalSeries: number) => {
@@ -141,12 +159,11 @@ export function WorkoutExecution() {
         progress: calculateProgress(),
       });
 
-      // Limpa os dados do celular apenas se salvar com sucesso no Firebase
       localStorage.removeItem(`workout_progress_${id}`);
-      
       alert("Treino salvo com sucesso!");
       navigate("/");
-    } catch (error) {
+    } catch (err) {
+      console.error("Erro ao salvar no Firebase:", err);
       alert("Erro ao salvar o progresso.");
     }
   }
