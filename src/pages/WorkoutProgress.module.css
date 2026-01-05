@@ -1,0 +1,23 @@
+.title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  
+  .infoBox {
+    background-color: #f8fafc;
+    border-left: 4px solid #22c55e;
+    padding: 16px;
+    margin-top: 24px;
+    border-radius: 8px;
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  
+  /* Garante que o container do gráfico tenha respiro */
+  :global(.app-container) {
+    padding-bottom: 100px; /* Espaço para não cobrir o Nav Bar se houver */
+  }

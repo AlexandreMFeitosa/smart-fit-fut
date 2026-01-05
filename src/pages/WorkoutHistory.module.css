@@ -125,6 +125,25 @@
   font-weight: 700;
 }
 
+.cardMain {
+  display: flex;
+  flex-direction: column; /* Organiza em coluna para não sobrepor */
+  gap: 8px;
+  padding: 12px;
+}
+
+.progressBadge {
+  font-size: 12px;
+  color: #166534;
+  background: #dcfce7;
+  padding: 4px 10px;
+  border-radius: 12px;
+  width: fit-content;
+  font-weight: bold;
+}
+
+
+
 /* Efeito de pulsação nos pontos do gráfico */
 .recharts-dot {
   filter: drop-shadow(0px 4px 4px rgba(34, 197, 94, 0.4));

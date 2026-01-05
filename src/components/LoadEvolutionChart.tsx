@@ -1,5 +1,5 @@
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Dot } from 'recharts';
-import styles from "./WorkoutHistory.module.css";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid} from 'recharts';
+import styles from "./LoadEvolutionChart.module.css";
 
 interface ChartData {
   date: string;
