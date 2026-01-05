@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { db } from "../firebase";
-import { ref, get, push } from "firebase/database";
-import type { Workout } from "../types/workout";
+import { ref, get, push, update } from "firebase/database";
+import type { Workout, Exercise } from "../types/workout";
 import styles from "./WorkoutExecution.module.css";
 
 export function WorkoutExecution() {
@@ -10,20 +10,31 @@ export function WorkoutExecution() {
   const navigate = useNavigate();
 
   const [workout, setWorkout] = useState<Workout | null>(null);
-  const [completedSets, setCompletedSets] = useState<{
-    [exerciseId: string]: number;
-  }>({});
+  const [completedSets, setCompletedSets] = useState<{ [exerciseId: string]: number }>({});
+  // NOVO: Estado para controlar os pesos alterados durante o treino
+  const [currentWeights, setCurrentWeights] = useState<{ [exerciseId: string]: number }>({});
+  
   const [timer, setTimer] = useState<number | null>(null);
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null);
   const [isActive, setIsActive] = useState(false);
 
-  // 1. Busca inicial do treino no Firebase
+  // 1. Busca inicial do treino
   useEffect(() => {
     async function fetchWorkout() {
       try {
         const workoutRef = ref(db, `treinos/${id}`);
         const snapshot = await get(workoutRef);
-        if (snapshot.exists()) setWorkout(snapshot.val());
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          setWorkout(data);
+          
+          // Inicializa os pesos atuais com os pesos vindos do banco
+          const initialWeights: { [key: string]: number } = {};
+          data.exercises.forEach((ex: Exercise) => {
+            initialWeights[ex.id] = ex.weight;
+          });
+          setCurrentWeights(initialWeights);
+        }
       } catch (err) {
         console.error("Erro ao buscar treino:", err);
       }
@@ -31,29 +42,30 @@ export function WorkoutExecution() {
     fetchWorkout();
   }, [id]);
 
-  // 2. RECUPERAÇÃO: Ao carregar, busca o progresso salvo no celular
+  // 2. RECUPERAÇÃO: Busca progresso e PESOS salvos no LocalStorage
   useEffect(() => {
-    const saved = localStorage.getItem(`workout_progress_${id}`);
-    if (saved) {
-      setCompletedSets(JSON.parse(saved));
-    }
+    const savedSets = localStorage.getItem(`workout_progress_${id}`);
+    const savedWeights = localStorage.getItem(`workout_weights_${id}`);
+    
+    if (savedSets) setCompletedSets(JSON.parse(savedSets));
+    if (savedWeights) setCurrentWeights(JSON.parse(savedWeights));
   }, [id]);
 
-  // 3. PERSISTÊNCIA: Salva no LocalStorage a cada mudança
+  // 3. PERSISTÊNCIA: Salva séries e pesos no LocalStorage
   useEffect(() => {
     if (Object.keys(completedSets).length > 0) {
       localStorage.setItem(`workout_progress_${id}`, JSON.stringify(completedSets));
     }
-  }, [completedSets, id]);
+    if (Object.keys(currentWeights).length > 0) {
+      localStorage.setItem(`workout_weights_${id}`, JSON.stringify(currentWeights));
+    }
+  }, [completedSets, currentWeights, id]);
 
-  // Lógica do Timer
+  // Lógica do Timer (mantida conforme anterior)
   useEffect(() => {
     let interval: any;
     if (isActive && timer !== null && timer > 0) {
-      interval = setInterval(
-        () => setTimer((t) => (t !== null ? t - 1 : null)),
-        1000
-      );
+      interval = setInterval(() => setTimer((t) => (t !== null ? t - 1 : null)), 1000);
     } else if (timer === 0) {
       handleTimerEnd();
     }
@@ -61,49 +73,29 @@ export function WorkoutExecution() {
   }, [isActive, timer]);
 
   function handleTimerEnd() {
-    // Atualiza o estado primeiro para liberar a interface
     setIsActive(false);
     setTimer(null);
     setActiveExerciseId(null);
-
-    // Executa áudio e notificação fora da thread principal para evitar tela branca
     setTimeout(() => {
       try {
-        const beep = new Audio(
-          "https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
-        );
-        const playPromise = beep.play();
-
-        if (playPromise !== undefined) {
-          playPromise.catch((err) => {
-            console.warn("Áudio impedido pelo navegador:", err);
-          });
-        }
-      } catch (err) {
-        console.error("Falha no áudio:", err);
-      }
-
-      try {
-        if ("Notification" in window && Notification.permission === "granted") {
-          new Notification("Smart Fit Fut", {
-            body: "Descanso acabou! Próxima série!",
-            silent: true,
-          });
-        }
-      } catch (err) {
-        console.error("Erro na notificação:", err);
+        const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+        beep.play().catch((err) => console.warn("Áudio impedido:", err));
+      } catch (err) { console.error("Falha áudio:", err); }
+      if ("Notification" in window && Notification.permission === "granted") {
+        new Notification("Smart Fit Fut", { body: "Descanso acabou!", silent: true });
       }
     }, 0);
   }
 
+  // Função para atualizar o peso em tempo real
+  const handleWeightChange = (exerciseId: string, value: string) => {
+    const newWeight = parseFloat(value) || 0;
+    setCurrentWeights(prev => ({ ...prev, [exerciseId]: newWeight }));
+  };
+
   const toggleExerciseFull = (exerciseId: string, totalSeries: number) => {
     const isCurrentlyFull = (completedSets[exerciseId] || 0) === totalSeries;
-
-    setCompletedSets((prev) => ({
-      ...prev,
-      [exerciseId]: isCurrentlyFull ? 0 : totalSeries,
-    }));
-
+    setCompletedSets((prev) => ({ ...prev, [exerciseId]: isCurrentlyFull ? 0 : totalSeries }));
     if (!isCurrentlyFull && activeExerciseId === exerciseId) {
       setIsActive(false);
       setTimer(null);
@@ -113,63 +105,63 @@ export function WorkoutExecution() {
 
   function toggleSet(exerciseId: string, setIndex: number) {
     const currentCompleted = completedSets[exerciseId] || 0;
-
     if (setIndex + 1 === currentCompleted) {
-      setCompletedSets({
-        ...completedSets,
-        [exerciseId]: currentCompleted - 1,
-      });
+      setCompletedSets({ ...completedSets, [exerciseId]: currentCompleted - 1 });
       if (activeExerciseId === exerciseId) {
         setIsActive(false);
         setTimer(null);
         setActiveExerciseId(null);
       }
     } else if (setIndex === currentCompleted) {
-      setCompletedSets({
-        ...completedSets,
-        [exerciseId]: currentCompleted + 1,
-      });
+      setCompletedSets({ ...completedSets, [exerciseId]: currentCompleted + 1 });
       const ex = workout?.exercises.find((e) => e.id === exerciseId);
       setTimer(ex?.rest || 60);
       setIsActive(true);
       setActiveExerciseId(exerciseId);
-
-      if (Notification.permission === "default")
-        Notification.requestPermission();
+      if (Notification.permission === "default") Notification.requestPermission();
     }
   }
 
   const calculateProgress = () => {
     if (!workout) return 0;
-    const totalExercises = workout.exercises.length;
     const finishedExercises = workout.exercises.filter(
       (ex) => (completedSets[ex.id] || 0) === ex.series
     ).length;
-    return Math.round((finishedExercises / totalExercises) * 100);
+    return Math.round((finishedExercises / workout.exercises.length) * 100);
   };
 
   async function handleFinishWorkout() {
     if (!workout) return;
     try {
+      // 1. Salva o log do treino
       const logsRef = ref(db, "logs");
       await push(logsRef, {
         workoutId: id,
         workoutName: workout.name,
         date: new Date().toISOString(),
         progress: calculateProgress(),
+        weightsUsed: currentWeights // Salva os pesos reais usados neste dia
       });
 
+      // 2. OPCIONAL: Atualiza o peso padrão do exercício para o próximo treino
+      const workoutRef = ref(db, `treinos/${id}`);
+      const updatedExercises = workout.exercises.map(ex => ({
+        ...ex,
+        weight: currentWeights[ex.id] || ex.weight
+      }));
+      await update(workoutRef, { exercises: updatedExercises });
+
       localStorage.removeItem(`workout_progress_${id}`);
-      alert("Treino salvo com sucesso!");
+      localStorage.removeItem(`workout_weights_${id}`);
+      alert("Treino e evolução de cargas salvos!");
       navigate("/");
     } catch (err) {
-      console.error("Erro ao salvar no Firebase:", err);
+      console.error("Erro ao finalizar:", err);
       alert("Erro ao salvar o progresso.");
     }
   }
 
-  if (!workout)
-    return <div className="app-container">Carregando treino...</div>;
+  if (!workout) return <div className="app-container">Carregando treino...</div>;
 
   return (
     <div className={styles.container}>
@@ -177,12 +169,9 @@ export function WorkoutExecution() {
 
       <div className={styles.progressContainer}>
         <div className={styles.progressBar}>
-          <div
-            className={styles.progressFill}
-            style={{ width: `${calculateProgress()}%` }}
-          />
+          <div className={styles.progressFill} style={{ width: `${calculateProgress()}%` }} />
         </div>
-        <p>{calculateProgress()}% do treino feito</p>
+        <p>{calculateProgress()}% concluído</p>
       </div>
 
       <div className={styles.exerciseGrid}>
@@ -195,21 +184,25 @@ export function WorkoutExecution() {
                 checked={(completedSets[ex.id] || 0) === ex.series}
                 onChange={() => toggleExerciseFull(ex.id, ex.series)}
               />
-              <div>
+              <div className={styles.exerciseMainInfo}>
                 <strong>{ex.name}</strong>
-                <p>
-                  {ex.series} séries x {ex.reps} reps
-                </p>
+                <p>{ex.series} séries x {ex.reps} reps</p>
               </div>
 
               <div className={styles.infoColumn}>
-                <span className={styles.weightBadge}>{ex.weight} kg</span>
+                {/* INPUT DE PESO EDITÁVEL */}
+                <div className={styles.weightInputWrapper}>
+                   <input 
+                    type="number" 
+                    className={styles.weightInput}
+                    value={currentWeights[ex.id] ?? ex.weight}
+                    onChange={(e) => handleWeightChange(ex.id, e.target.value)}
+                   />
+                   <span className={styles.weightUnit}>kg</span>
+                </div>
+
                 {activeExerciseId === ex.id && timer !== null && (
-                  <span
-                    className={`${styles.inlineTimer} ${
-                      timer < 10 ? styles.timerUrgent : ""
-                    }`}
-                  >
+                  <span className={`${styles.inlineTimer} ${timer < 10 ? styles.timerUrgent : ""}`}>
                     {timer}s
                   </span>
                 )}
@@ -235,7 +228,7 @@ export function WorkoutExecution() {
       </div>
 
       <button className={styles.finishBtn} onClick={handleFinishWorkout}>
-        Finalizar Treino
+        Finalizar e Salvar Cargas
       </button>
     </div>
   );

@@ -1,116 +1,145 @@
 .container {
-  max-width: 420px;
+  padding: 16px;
+  max-width: 500px;
   margin: 0 auto;
-  padding: 24px 16px;
 }
 
-/* HEADER */
-.header {
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.appTitle {
-  font-size: 1.8rem;
+.title {
+  font-size: 22px;
   font-weight: 800;
-  color: var(--text);
-}
-
-.subtitle {
-  font-size: 0.95rem;
-  color: var(--muted);
-}
-
-/* CTA PRINCIPAL */
-.highlightCard {
-  background: linear-gradient(135deg, #1f7a3d, #22c55e);
-  color: white;
-  border-radius: 20px;
-  padding: 20px;
-  margin-bottom: 24px;
-  box-shadow: 0 12px 28px rgba(31, 122, 61, 0.35);
-  
-}
-
-.highlightCard h3 {
-  font-size: 1.2rem;
-  margin-bottom: 6px;
-}
-
-.highlightCard p {
-  font-size: 0.9rem;
-  opacity: 0.9;
-}
-
-.primaryButton {
-  margin-top: 14px;
-  width: 100%;
-  padding: 14px;
-  border-radius: 16px;
-  background: white;
-  color: #1f7a3d;
-  font-weight: 700;
-  font-size: 1rem;
-  border: none;
-  cursor: pointer;
-}
-
-.primaryButton:active {
-  transform: scale(0.98);
-}
-
-/* PROGRESSO */
-.progressCard {
-  background: white;
-  border-radius: 16px;
-  padding: 18px;
-  margin-bottom: 24px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-}
-
-.progressCard h4 {
-  font-size: 1rem;
-  margin-bottom: 12px;
-}
-
-.progressBar {
-  width: 100%;
-  height: 10px;
-  background: #e5e7eb;
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.progress {
-  height: 100%;
-  background: #1f7a3d;
-  transition: width 0.3s ease;
-}
-
-.progressText {
-  display: block;
-  margin-top: 8px;
-  font-size: 0.85rem;
+  color: #1e293b;
+  margin-bottom: 20px;
   text-align: center;
-  color: var(--muted);
 }
 
-/* AÇÕES SECUNDÁRIAS */
-.secondaryActions {
-  display: flex;
-  gap: 12px;
+/* Gráfico */
+.chartCard {
+  background: white;
+  padding: 20px 10px;
+  border-radius: 24px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  margin-bottom: 30px;
+  border: 1px solid #f1f5f9;
 }
 
-.secondaryActions button {
-  flex: 1;
-  padding: 12px;
-  border-radius: 14px;
-  background: #f1f5f9;
-  border: none;
+.chartLegend {
+  text-align: center;
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 10px;
+}
+
+/* Calendário */
+.sectionTitle {
+  font-size: 16px;
+  color: #64748b;
+  margin-bottom: 12px;
   font-weight: 600;
-  cursor: pointer;
 }
 
-.secondaryActions button:active {
-  transform: scale(0.97);
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 30px;
+}
+
+.day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.hasWorkout {
+  background: #22c55e !important;
+  color: white !important;
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(34, 197, 94, 0.3);
+}
+
+.today {
+  border: 2px solid #22c55e;
+}
+
+.active {
+  transform: scale(1.1);
+  border: 2px solid #1e293b;
+}
+
+/* Detalhes */
+.detailsTitle {
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: #1e293b;
+}
+
+.card {
+  background: white;
+  padding: 16px;
+  border-radius: 16px;
+  margin-bottom: 12px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+}
+
+.cardInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.badge {
+  font-size: 11px;
+  background: #dcfce7;
+  color: #166534;
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-weight: 700;
+}
+
+.weightList {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.weightTag {
+  font-size: 12px;
+  background: #f1f5f9;
+  padding: 4px 10px;
+  border-radius: 8px;
+  color: #475569;
+  font-weight: 600;
+}
+
+/* Loading */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #22c55e;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }

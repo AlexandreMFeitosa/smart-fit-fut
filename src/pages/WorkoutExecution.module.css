@@ -163,6 +163,40 @@
   .finishBtn:active {
     opacity: 0.8;
   }
+
+  .weightInputWrapper {
+    display: flex;
+    align-items: center;
+    background: #f1f5f9;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+  }
+  
+  .weightInput {
+    width: 45px;
+    border: none;
+    background: transparent;
+    font-weight: bold;
+    font-size: 1rem;
+    color: #1e293b;
+    text-align: right;
+    outline: none;
+  }
+  
+  .weightUnit {
+    font-size: 0.8rem;
+    margin-left: 2px;
+    color: #64748b;
+    font-weight: 600;
+  }
+  
+  /* Esconde as setinhas padrão do input de número para ficar mais limpo */
+  .weightInput::-webkit-inner-spin-button,
+  .weightInput::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
   
   /* ANIMAÇÕES */
   @keyframes pulse {

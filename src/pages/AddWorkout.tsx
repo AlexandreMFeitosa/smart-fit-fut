@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Exercise } from "../types/workout";
-import { db } from "../firebase"; // Sua conexão configurada
-import { ref, push, set } from "firebase/database"; // Imports corrigidos para Realtime
+import { db } from "../firebase";
+import { ref, push, set } from "firebase/database";
 import { v4 as uuid } from "uuid";
 import styles from "./AddWorkout.module.css";
 
@@ -17,7 +17,7 @@ export function AddWorkout() {
   const [reps, setReps] = useState(12);
   const [isSaving, setIsSaving] = useState(false);
   const [weight, setWeight] = useState(0);
-  const [rest, setRest] = useState(60); // Padrão 60s
+  const [rest, setRest] = useState(60);
 
   function handleAddExercise() {
     if (!exerciseName.trim() || !substitute.trim()) {
@@ -25,22 +25,25 @@ export function AddWorkout() {
       return;
     }
 
-    // Já deixamos o campo 'lastWeight' pronto para a Linha Amarela
-    const newExercise: any = {
+    const newExercise: Exercise = {
       id: uuid(),
       name: exerciseName,
       substitute,
       series: Number(series),
       reps: Number(reps),
-      weight: Number(weight), // Salvando o peso
-      rest: Number(rest), // Salvando o descanso
-      lastWeight: "",
+      weight: Number(weight),
+      rest: Number(rest),
     };
 
     setExercises((prev) => [...prev, newExercise]);
     setExerciseName("");
     setSubstitute("");
     setWeight(0);
+    setRest(60);
+  }
+
+  function removeExercise(id: string) {
+    setExercises(exercises.filter((ex) => ex.id !== id));
   }
 
   async function handleSaveWorkout() {
@@ -51,7 +54,6 @@ export function AddWorkout() {
 
     setIsSaving(true);
     try {
-      // Referência para a pasta 'treinos' no Realtime Database
       const workoutsRef = ref(db, "treinos");
       const newWorkoutRef = push(workoutsRef);
 
@@ -103,6 +105,7 @@ export function AddWorkout() {
               onChange={(e) => setSubstitute(e.target.value)}
             />
           </div>
+          
           <div className={styles.row}>
             <div className={styles.inputGroup}>
               <label>Séries</label>
@@ -128,9 +131,8 @@ export function AddWorkout() {
                 onChange={(e) => setWeight(Number(e.target.value))}
               />
             </div>
-
             <div className={styles.inputGroup}>
-              <label>Descanso (segundos)</label>
+              <label>Descanso (s)</label>
               <input
                 type="number"
                 value={rest}
@@ -138,6 +140,7 @@ export function AddWorkout() {
               />
             </div>
           </div>
+
           <button className={styles.btnAddExercise} onClick={handleAddExercise}>
             + Incluir na lista
           </button>
@@ -145,10 +148,17 @@ export function AddWorkout() {
           <ul className={styles.list}>
             {exercises.map((ex) => (
               <li key={ex.id} className={styles.exerciseItem}>
-                <span>
-                  {ex.name} - {ex.series}x{ex.reps}
-                </span>
-                <small style={{ color: "var(--muted)" }}>{ex.substitute}</small>
+                <div>
+                  <strong>{ex.name}</strong>
+                  <p>{ex.series}x{ex.reps} - {ex.weight}kg</p>
+                  <small style={{ color: "#64748b" }}>Sub: {ex.substitute}</small>
+                </div>
+                <button 
+                  onClick={() => removeExercise(ex.id)}
+                  className={styles.btnRemove}
+                >
+                  ✕
+                </button>
               </li>
             ))}
           </ul>
