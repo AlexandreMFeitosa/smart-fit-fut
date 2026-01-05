@@ -17,7 +17,7 @@ export function WorkoutExecution() {
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null);
   const [isActive, setIsActive] = useState(false);
 
-  // Busca inicial do treino no Firebase
+  // 1. Busca inicial do treino no Firebase
   useEffect(() => {
     async function fetchWorkout() {
       const workoutRef = ref(db, `treinos/${id}`);
@@ -27,7 +27,22 @@ export function WorkoutExecution() {
     fetchWorkout();
   }, [id]);
 
-  // Lógica do Timer com suporte a reset/cancelamento
+  // 2. RECUPERAÇÃO: Ao carregar a página, busca o progresso salvo no celular
+  useEffect(() => {
+    const saved = localStorage.getItem(`workout_progress_${id}`);
+    if (saved) {
+      setCompletedSets(JSON.parse(saved));
+    }
+  }, [id]);
+
+  // 3. PERSISTÊNCIA: Sempre que mudar uma marcação, salva no LocalStorage
+  useEffect(() => {
+    if (Object.keys(completedSets).length > 0) {
+      localStorage.setItem(`workout_progress_${id}`, JSON.stringify(completedSets));
+    }
+  }, [completedSets, id]);
+
+  // Lógica do Timer
   useEffect(() => {
     let interval: any;
     if (isActive && timer !== null && timer > 0) {
@@ -45,10 +60,17 @@ export function WorkoutExecution() {
     setIsActive(false);
     setTimer(null);
     setActiveExerciseId(null);
-    const beep = new Audio(
-      "https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
-    );
-    beep.play();
+
+    // Proteção com try/catch para evitar tela branca no Android ao tocar som
+    try {
+      const beep = new Audio(
+        "https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
+      );
+      beep.play().catch(() => console.log("Áudio bloqueado pelo navegador até interação."));
+    } catch (e) {
+      console.error("Erro ao processar áudio:", e);
+    }
+
     if (Notification.permission === "granted") {
       new Notification("Smart Fit Fut", {
         body: "Descanso acabou! Próxima série!",
@@ -56,17 +78,14 @@ export function WorkoutExecution() {
     }
   }
 
-  // Função para marcar/desmarcar o exercício inteiro pelo Checkbox
   const toggleExerciseFull = (exerciseId: string, totalSeries: number) => {
     const isCurrentlyFull = (completedSets[exerciseId] || 0) === totalSeries;
 
     setCompletedSets((prev) => ({
       ...prev,
-      // Se já estava completo, zera. Se não, marca todas as séries como feitas.
       [exerciseId]: isCurrentlyFull ? 0 : totalSeries,
     }));
 
-    // Se o usuário marcar como feito manualmente, paramos qualquer timer ativo para esse exercício
     if (!isCurrentlyFull && activeExerciseId === exerciseId) {
       setIsActive(false);
       setTimer(null);
@@ -77,7 +96,6 @@ export function WorkoutExecution() {
   function toggleSet(exerciseId: string, setIndex: number) {
     const currentCompleted = completedSets[exerciseId] || 0;
 
-    // Se clicar na série marcada por último, ela é desmarcada e o timer cancelado
     if (setIndex + 1 === currentCompleted) {
       setCompletedSets({
         ...completedSets,
@@ -88,9 +106,7 @@ export function WorkoutExecution() {
         setTimer(null);
         setActiveExerciseId(null);
       }
-    }
-    // Inicia a próxima série e dispara o timer localizado
-    else if (setIndex === currentCompleted) {
+    } else if (setIndex === currentCompleted) {
       setCompletedSets({
         ...completedSets,
         [exerciseId]: currentCompleted + 1,
@@ -124,6 +140,10 @@ export function WorkoutExecution() {
         date: new Date().toISOString(),
         progress: calculateProgress(),
       });
+
+      // Limpa os dados do celular apenas se salvar com sucesso no Firebase
+      localStorage.removeItem(`workout_progress_${id}`);
+      
       alert("Treino salvo com sucesso!");
       navigate("/");
     } catch (error) {
@@ -154,7 +174,7 @@ export function WorkoutExecution() {
             <div className={styles.cardHeader}>
               <input
                 type="checkbox"
-                className={styles.exerciseCheckbox} // Usando a nova classe de estilo
+                className={styles.exerciseCheckbox}
                 checked={(completedSets[ex.id] || 0) === ex.series}
                 onChange={() => toggleExerciseFull(ex.id, ex.series)}
               />
@@ -181,9 +201,7 @@ export function WorkoutExecution() {
 
             <div className={styles.setsRow}>
               {Array.from({ length: ex.series }).map((_, i) => {
-                // Definimos a constante aqui dentro para cada botão
                 const isFinished = i < (completedSets[ex.id] || 0);
-
                 return (
                   <button
                     key={i}
