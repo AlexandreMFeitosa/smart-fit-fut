@@ -193,6 +193,7 @@ export function WorkoutExecution() {
                   >
                     📈 Histórico
                   </button>
+                  
                 </div>
 
                 {activeExerciseId === ex.id && timer !== null && (
