@@ -6,88 +6,115 @@ import styles from "./Dashboard.module.css";
 
 export function Dashboard() {
   const navigate = useNavigate();
+
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(0);
   const [lastWorkout, setLastWorkout] = useState<string | null>(null);
+
+  const goal = 20;
+  const monthName = "Janeiro";
 
   useEffect(() => {
     async function fetchMonthlyProgress() {
       const logsRef = ref(db, "logs");
       const snapshot = await get(logsRef);
 
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        const now = new Date();
-        const monthPrefix = now.toISOString().slice(0, 7); // Ex: "2026-01"
+      if (!snapshot.exists()) return;
 
-        const allLogs = Object.values(data) as any[];
+      const data = snapshot.val();
+      const now = new Date();
+      const monthPrefix = now.toISOString().slice(0, 7); // YYYY-MM
 
-        // Filtra os treinos do mês atual
-        const logsThisMonth = allLogs.filter(
-          (log) => log.date && log.date.startsWith(monthPrefix)
+      const allLogs = Object.values(data) as any[];
+
+      const logsThisMonth = allLogs.filter(
+        (log) => log.date && log.date.startsWith(monthPrefix)
+      );
+
+      if (allLogs.length > 0) {
+        const sorted = [...allLogs].sort(
+          (a, b) =>
+            new Date(b.date).getTime() - new Date(a.date).getTime()
         );
-
-        // Pega o nome do último treino realizado para exibir
-        if (allLogs.length > 0) {
-          const sorted = allLogs.sort(
-            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-          );
-          setLastWorkout(sorted[0].workoutName);
-        }
-
-        setDone(logsThisMonth.length);
-        setProgress(Math.min((logsThisMonth.length / 20) * 100, 100));
+        setLastWorkout(sorted[0].workoutName);
       }
+
+      setDone(logsThisMonth.length);
+      setProgress(Math.min((logsThisMonth.length / goal) * 100, 100));
     }
+
     fetchMonthlyProgress();
   }, []);
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Smart Fit Fut</h1>
+      {/* HEADER */}
+      <header className={styles.header}>
+        <h1 className={styles.title}>Smart Fit Fut</h1>
+        <p className={styles.subtitleText}>
+          Vamos manter o foco hoje 💪
+        </p>
+      </header>
 
-      <div className={styles.card}>
-        <div className={styles.subtitle}>
-          <span>Progresso de Janeiro</span>
-          <span>{Math.round(progress)}%</span>
+      {/* CARD PROGRESSO */}
+      <section className={styles.card}>
+        <div className={styles.cardHeader}>
+          <span>Progresso de {monthName}</span>
+          <strong>{Math.round(progress)}%</strong>
         </div>
 
         <div className={styles.progressBar}>
-          <div className={styles.progress} style={{ width: `${progress}%` }} />
+          <div
+            className={styles.progress}
+            style={{ width: `${progress}%` }}
+          />
         </div>
 
         <p className={styles.progressText}>
-          <strong>{done}</strong> / 20 treinos
-          {lastWorkout && (
-            <span className={styles.lastWorkout}>
-              <br />
-              Último: {lastWorkout}
-            </span>
-          )}
+          <strong>{done}</strong> / {goal} treinos
         </p>
-      </div>
 
-      <button
-        className={styles.mainButton}
-        onClick={() => navigate("/treinos")}
-      >
-        🏋️‍♂️ Meus Treinos
-      </button>
+        {lastWorkout && (
+          <p className={styles.lastWorkout}>
+            Último treino: <strong>{lastWorkout}</strong>
+          </p>
+        )}
+      </section>
 
-      <div className={styles.buttonGrid}>
+      {/* CARD TREINO DE HOJE */}
+      <section className={styles.card}>
+        <h2 className={styles.cardTitle}>Treino de hoje</h2>
+
+        <p className={styles.mutedText}>
+          Você ainda não marcou um treino hoje
+        </p>
+
         <button
-          className={styles.secondaryButton}
+          className={styles.primaryButton}
+          onClick={() => navigate("/treinos")}
+        >
+          Começar treino
+        </button>
+      </section>
+
+      {/* AÇÕES RÁPIDAS */}
+      <section className={styles.actions}>
+        <button
+          className={styles.actionButton}
           onClick={() => navigate("/adicionar-treino")}
         >
-          + Novo Treino
+          ➕
+          <span>Novo Treino</span>
         </button>
+
         <button
-          className={styles.secondaryButton}
+          className={styles.actionButton}
           onClick={() => navigate("/historico")}
         >
-          📅 Histórico
+          📅
+          <span>Histórico</span>
         </button>
-      </div>
+      </section>
     </div>
   );
 }
