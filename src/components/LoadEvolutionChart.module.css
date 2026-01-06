@@ -1,14 +1,17 @@
 .chartWrapper {
-    background: white;
-    padding: 20px;
-    border-radius: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    margin-bottom: 20px;
-  }
-  .chartTitle {
-    font-size: 16px;
-    color: #1e293b;
-    margin-bottom: 15px;
-    font-weight: 700;
-    text-align: center;
-  }
+  background: #ffffff;
+  padding: 24px 16px;
+  border-radius: 20px;
+  margin: 16px 0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* Mesma sombra do seu calendário */
+}
+
+.chartTitle {
+  font-size: 13px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 25px;
+  font-weight: 700;
+  text-align: center;
+}

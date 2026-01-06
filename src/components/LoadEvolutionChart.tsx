@@ -1,53 +1,44 @@
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid} from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import styles from "./LoadEvolutionChart.module.css";
 
-interface ChartData {
-  date: string;
-  weight: number;
-}
-
-export function LoadEvolutionChart({ data }: { data: ChartData[] }) {
+export function LoadEvolutionChart({ data }: { data: any[] }) {
   return (
     <div className={styles.chartWrapper}>
-      <h3 className={styles.chartTitle}>Progressão de Carga (kg)</h3>
+      <h3 className={styles.chartTitle}>Progresso de Carga (kg)</h3>
       <ResponsiveContainer width="100%" height={250}>
-        <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-          {/* Gradiente sutil no fundo */}
+        <AreaChart data={data} margin={{ top: 30, right: 10, left: -25, bottom: 0 }}>
+          <defs>
+            <linearGradient id="colorWeight" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3}/>
+              <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
+            </linearGradient>
+          </defs>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-          
-          <XAxis 
-            dataKey="date" 
-            axisLine={false} 
-            tickLine={false} 
-            tick={{ fontSize: 12, fill: '#94a3b8' }}
-            dy={10}
-          />
-          
-          <YAxis 
-            axisLine={false} 
-            tickLine={false} 
-            tick={{ fontSize: 12, fill: '#94a3b8' }} 
-          />
-
-          <Tooltip 
-            contentStyle={{ 
-              borderRadius: '12px', 
-              border: 'none', 
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)' 
-            }}
-            labelStyle={{ fontWeight: 'bold', color: '#1e293b' }}
-          />
-
-          <Line
+          <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} />
+          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} />
+          <Tooltip />
+          <Area
             type="monotone"
             dataKey="weight"
-            stroke="#22c55e" // Verde Smart Fit
-            strokeWidth={4}
-            dot={{ r: 6, fill: "#22c55e", strokeWidth: 2, stroke: "#fff" }}
-            activeDot={{ r: 8, strokeWidth: 0 }}
-            animationDuration={1500}
+            stroke="#22c55e"
+            strokeWidth={3}
+            fillOpacity={1}
+            fill="url(#colorWeight)"
+            dot={{ r: 5, fill: "#fff", strokeWidth: 2, stroke: "#22c55e" }}
+            // Bubble label customizado conforme sua imagem de referência
+            label={(props: any) => {
+              const { x, y, value } = props;
+              return (
+                <g transform={`translate(${x - 20},${y - 35})`}>
+                  <rect width="42" height="22" rx="6" fill="#22c55e" />
+                  <text x="21" y="15" textAnchor="middle" fill="#fff" fontSize="10" fontWeight="bold">
+                    {`${value}kg`}
+                  </text>
+                </g>
+              );
+            }}
           />
-        </LineChart>
+        </AreaChart>
       </ResponsiveContainer>
     </div>
   );
