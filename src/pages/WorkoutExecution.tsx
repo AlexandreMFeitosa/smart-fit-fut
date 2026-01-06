@@ -5,13 +5,13 @@ import { ref, get, push, update } from "firebase/database";
 import type { Workout, Exercise } from "../types/workout";
 import styles from "./WorkoutExecution.module.css";
 
+
 export function WorkoutExecution() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [workout, setWorkout] = useState<Workout | null>(null);
   const [completedSets, setCompletedSets] = useState<{ [exerciseId: string]: number }>({});
-  // NOVO: Estado para controlar os pesos alterados durante o treino
   const [currentWeights, setCurrentWeights] = useState<{ [exerciseId: string]: number }>({});
   
   const [timer, setTimer] = useState<number | null>(null);
@@ -28,7 +28,6 @@ export function WorkoutExecution() {
           const data = snapshot.val();
           setWorkout(data);
           
-          // Inicializa os pesos atuais com os pesos vindos do banco
           const initialWeights: { [key: string]: number } = {};
           data.exercises.forEach((ex: Exercise) => {
             initialWeights[ex.id] = ex.weight;
@@ -42,7 +41,7 @@ export function WorkoutExecution() {
     fetchWorkout();
   }, [id]);
 
-  // 2. RECUPERAÇÃO: Busca progresso e PESOS salvos no LocalStorage
+  // 2. RECUPERAÇÃO: LocalStorage
   useEffect(() => {
     const savedSets = localStorage.getItem(`workout_progress_${id}`);
     const savedWeights = localStorage.getItem(`workout_weights_${id}`);
@@ -51,7 +50,7 @@ export function WorkoutExecution() {
     if (savedWeights) setCurrentWeights(JSON.parse(savedWeights));
   }, [id]);
 
-  // 3. PERSISTÊNCIA: Salva séries e pesos no LocalStorage
+  // 3. PERSISTÊNCIA: LocalStorage
   useEffect(() => {
     if (Object.keys(completedSets).length > 0) {
       localStorage.setItem(`workout_progress_${id}`, JSON.stringify(completedSets));
@@ -61,7 +60,7 @@ export function WorkoutExecution() {
     }
   }, [completedSets, currentWeights, id]);
 
-  // Lógica do Timer (mantida conforme anterior)
+  // Lógica do Timer
   useEffect(() => {
     let interval: any;
     if (isActive && timer !== null && timer > 0) {
@@ -76,49 +75,35 @@ export function WorkoutExecution() {
     setIsActive(false);
     setTimer(null);
     setActiveExerciseId(null);
-    setTimeout(() => {
-      try {
-        const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
-        beep.play().catch((err) => console.warn("Áudio impedido:", err));
-      } catch (err) { console.error("Falha áudio:", err); }
-      if ("Notification" in window && Notification.permission === "granted") {
-        new Notification("Smart Fit Fut", { body: "Descanso acabou!", silent: true });
-      }
-    }, 0);
+    const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+    beep.play().catch(() => {});
   }
 
-  // Função para atualizar o peso em tempo real
   const handleWeightChange = (exerciseId: string, value: string) => {
     const newWeight = parseFloat(value) || 0;
     setCurrentWeights(prev => ({ ...prev, [exerciseId]: newWeight }));
   };
 
+  // NOVO: Função para ver evolução
+  const handleSeeEvolution = (exerciseId: string) => {
+    navigate(`/evolucao?workoutId=${id}&exerciseId=${exerciseId}`);
+  };
+
   const toggleExerciseFull = (exerciseId: string, totalSeries: number) => {
     const isCurrentlyFull = (completedSets[exerciseId] || 0) === totalSeries;
     setCompletedSets((prev) => ({ ...prev, [exerciseId]: isCurrentlyFull ? 0 : totalSeries }));
-    if (!isCurrentlyFull && activeExerciseId === exerciseId) {
-      setIsActive(false);
-      setTimer(null);
-      setActiveExerciseId(null);
-    }
   };
 
   function toggleSet(exerciseId: string, setIndex: number) {
     const currentCompleted = completedSets[exerciseId] || 0;
     if (setIndex + 1 === currentCompleted) {
       setCompletedSets({ ...completedSets, [exerciseId]: currentCompleted - 1 });
-      if (activeExerciseId === exerciseId) {
-        setIsActive(false);
-        setTimer(null);
-        setActiveExerciseId(null);
-      }
     } else if (setIndex === currentCompleted) {
       setCompletedSets({ ...completedSets, [exerciseId]: currentCompleted + 1 });
       const ex = workout?.exercises.find((e) => e.id === exerciseId);
       setTimer(ex?.rest || 60);
       setIsActive(true);
       setActiveExerciseId(exerciseId);
-      if (Notification.permission === "default") Notification.requestPermission();
     }
   }
 
@@ -133,17 +118,15 @@ export function WorkoutExecution() {
   async function handleFinishWorkout() {
     if (!workout) return;
     try {
-      // 1. Salva o log do treino
       const logsRef = ref(db, "logs");
       await push(logsRef, {
         workoutId: id,
         workoutName: workout.name,
         date: new Date().toISOString(),
         progress: calculateProgress(),
-        weightsUsed: currentWeights // Salva os pesos reais usados neste dia
+        weightsUsed: currentWeights
       });
 
-      // 2. OPCIONAL: Atualiza o peso padrão do exercício para o próximo treino
       const workoutRef = ref(db, `treinos/${id}`);
       const updatedExercises = workout.exercises.map(ex => ({
         ...ex,
@@ -153,16 +136,17 @@ export function WorkoutExecution() {
 
       localStorage.removeItem(`workout_progress_${id}`);
       localStorage.removeItem(`workout_weights_${id}`);
-      alert("Treino e evolução de cargas salvos!");
       navigate("/");
     } catch (err) {
-      console.error("Erro ao finalizar:", err);
-      alert("Erro ao salvar o progresso.");
+      console.error(err);
     }
   }
 
-  if (!workout) return <div className="app-container">Carregando treino...</div>;
+  if (!workout) {
+    return <div className="app-container">Carregando treino...</div>;
+  }
 
+  // Agora o TypeScript sabe que, se chegou aqui, o 'workout' EXISTE e não é null.
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>{workout.name}</h1>
@@ -190,15 +174,25 @@ export function WorkoutExecution() {
               </div>
 
               <div className={styles.infoColumn}>
-                {/* INPUT DE PESO EDITÁVEL */}
-                <div className={styles.weightInputWrapper}>
-                   <input 
-                    type="number" 
-                    className={styles.weightInput}
-                    value={currentWeights[ex.id] ?? ex.weight}
-                    onChange={(e) => handleWeightChange(ex.id, e.target.value)}
-                   />
-                   <span className={styles.weightUnit}>kg</span>
+                <div className={styles.weightColumn}>
+                  <div className={styles.weightInputWrapper}>
+                    <input 
+                      type="number" 
+                      className={styles.weightInput}
+                      value={currentWeights[ex.id] ?? ex.weight}
+                      onChange={(e) => handleWeightChange(ex.id, e.target.value)}
+                    />
+                    <span className={styles.weightUnit}>kg</span>
+                  </div>
+                  
+                  {/* ATALHO PARA EVOLUÇÃO */}
+                  <button 
+                    className={styles.evolutionLink}
+                    type="button"
+                    onClick={() => handleSeeEvolution(ex.id)}
+                  >
+                    📈 Histórico
+                  </button>
                 </div>
 
                 {activeExerciseId === ex.id && timer !== null && (

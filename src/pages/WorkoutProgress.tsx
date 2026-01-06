@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { db } from "../firebase";
 import { ref, get } from "firebase/database";
+import { useSearchParams } from "react-router-dom";
 import { LoadEvolutionChart } from "../components/LoadEvolutionChart";
 import styles from "./WorkoutProgress.module.css";
 
@@ -25,15 +26,16 @@ export function WorkoutProgress() {
   const [selectedWorkoutId, setSelectedWorkoutId] = useState<string>("");
   const [selectedExerciseId, setSelectedExerciseId] = useState<string>("");
   const [allLogs, setAllLogs] = useState<WorkoutLog[]>([]);
-  const [evolutionData, setEvolutionData] = useState<
-    { date: string; weight: number }[]
-  >([]);
+  const [evolutionData, setEvolutionData] = useState<{ date: string; weight: number }[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Hook para ler parâmetros da URL (ex: ?workoutId=123&exerciseId=456)
+  const [searchParams] = useSearchParams();
 
+  // 1. Busca inicial de dados (Treinos e Logs)
   useEffect(() => {
     async function fetchData() {
       try {
-        console.log("Iniciando busca no Firebase...");
         const workoutsRef = ref(db, "treinos");
         const logsRef = ref(db, "logs");
         
@@ -44,63 +46,60 @@ export function WorkoutProgress() {
   
         if (workoutsSnap.exists()) {
           const data = workoutsSnap.val();
-          const workoutsList = Object.keys(data).map((key) => {
-            const item = data[key];
-            return {
-              id: key,
-              // Captura o nome correto: "Treino A - Peito..."
-              name: item.name || item.nome || "Treino sem nome",
-              // Mapeia os exercícios internos
-              exercises: (item.exercises || item.exercicios || []).map((ex: any, index: number) => ({
-                id: ex.id || `ex-${index}`,
-                name: ex.name || ex.nome || "Exercício sem nome",
-              })),
-            };
-          });
+          const workoutsList = Object.keys(data).map((key) => ({
+            id: key,
+            name: data[key].name || data[key].nome || "Treino sem nome",
+            exercises: (data[key].exercises || data[key].exercicios || []).map((ex: any, index: number) => ({
+              id: ex.id || `ex-${index}`,
+              name: ex.name || ex.nome || "Exercício sem nome",
+            })),
+          }));
         
           setWorkouts(workoutsList);
-          if (workoutsList.length > 0) {
+          
+          // Lógica de seleção inicial: URL primeiro, se não, o primeiro da lista
+          const workoutIdFromUrl = searchParams.get("workoutId");
+          if (workoutIdFromUrl) {
+            setSelectedWorkoutId(workoutIdFromUrl);
+          } else if (workoutsList.length > 0) {
             setSelectedWorkoutId(workoutsList[0].id);
           }
-        } else {
-          console.warn("Nenhum treino encontrado no Firebase.");
         }
   
         if (logsSnap.exists()) {
           setAllLogs(Object.values(logsSnap.val()));
         }
       } catch (err) {
-        console.error("Erro crítico na busca:", err);
-        alert("Erro ao conectar com o Firebase. Verifique o console.");
+        console.error("Erro na busca:", err);
       } finally {
         setLoading(false);
       }
     }
     fetchData();
-  }, []);
+  }, [searchParams]);
 
-  // Quando o treino selecionado mudar, atualiza o primeiro exercício da lista
+  // 2. Atualiza o exercício selecionado quando o treino muda
   useEffect(() => {
+    const exerciseIdFromUrl = searchParams.get("exerciseId");
     const currentWorkout = workouts.find((w) => w.id === selectedWorkoutId);
-    if (
-      currentWorkout &&
-      currentWorkout.exercises &&
-      currentWorkout.exercises.length > 0
-    ) {
-      setSelectedExerciseId(currentWorkout.exercises[0].id);
+
+    if (currentWorkout && currentWorkout.exercises.length > 0) {
+      // Se viemos de um atalho (URL), usamos esse ID. Se não, pegamos o primeiro do treino.
+      if (exerciseIdFromUrl && currentWorkout.exercises.some(e => e.id === exerciseIdFromUrl)) {
+        setSelectedExerciseId(exerciseIdFromUrl);
+      } else {
+        setSelectedExerciseId(currentWorkout.exercises[0].id);
+      }
     } else {
       setSelectedExerciseId("");
     }
-  }, [selectedWorkoutId, workouts]);
+  }, [selectedWorkoutId, workouts, searchParams]);
 
-  // Filtra os pesos para o gráfico sempre que mudar o exercício ou logs
+  // 3. Filtra os pesos para gerar o gráfico
   useEffect(() => {
     if (selectedExerciseId) {
       const data = allLogs
-        .filter(
-          (log) =>
-            log.weightsUsed && log.weightsUsed[selectedExerciseId] !== undefined
-        )
+        .filter((log) => log.weightsUsed && log.weightsUsed[selectedExerciseId] !== undefined)
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
         .map((log) => ({
           date: new Date(log.date).toLocaleDateString("pt-BR", {
@@ -115,62 +114,58 @@ export function WorkoutProgress() {
     }
   }, [selectedExerciseId, allLogs]);
 
-  const currentExercises =
-    workouts.find((w) => w.id === selectedWorkoutId)?.exercises || [];
+  const currentExercises = workouts.find((w) => w.id === selectedWorkoutId)?.exercises || [];
 
-  if (loading)
-    return <div className="app-container">Carregando evolução...</div>;
+  if (loading) return <div className="app-container">Carregando evolução...</div>;
 
   return (
     <div className="app-container">
       <div className={styles.container}>
-      <h1 className={styles.title}>Evolução de Carga</h1>
+        <h1 className={styles.title}>Evolução de Carga</h1>
 
-      <div className={styles.filterSection}>
-        <div className={styles.field}>
-          <label>Selecione o Treino:</label>
-          <select
-            value={selectedWorkoutId}
-            onChange={(e) => setSelectedWorkoutId(e.target.value)}
-            className={styles.select}
-          >
-            {workouts.map((w) => (
-              <option key={w.id} value={w.id}>
-                {w.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className={styles.field}>
-          <label>Selecione o Exercício:</label>
-          <select
-            value={selectedExerciseId}
-            onChange={(e) => setSelectedExerciseId(e.target.value)}
-            className={styles.select}
-            disabled={currentExercises.length === 0}
-          >
-            {currentExercises.map((ex) => (
-              <option key={ex.id} value={ex.id}>
-                {ex.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div className={styles.chartContainer}>
-        {evolutionData.length > 0 ? (
-          <LoadEvolutionChart data={evolutionData} />
-        ) : (
-          <div className={styles.empty}>
-            {selectedExerciseId
-              ? "Ainda não há registros de peso para este exercício."
-              : "Selecione um treino e exercício para ver a evolução."}
+        <div className={styles.filterSection}>
+          <div className={styles.field}>
+            <label>Selecione o Treino:</label>
+            <select
+              value={selectedWorkoutId}
+              onChange={(e) => setSelectedWorkoutId(e.target.value)}
+              className={styles.select}
+            >
+              {workouts.map((w) => (
+                <option key={w.id} value={w.id}>{w.name}</option>
+              ))}
+            </select>
           </div>
-        )}
-      </div>
+
+          <div className={styles.field}>
+            <label>Selecione o Exercício:</label>
+            <select
+              value={selectedExerciseId}
+              onChange={(e) => setSelectedExerciseId(e.target.value)}
+              className={styles.select}
+              disabled={currentExercises.length === 0}
+            >
+              {currentExercises.map((ex) => (
+                <option key={ex.id} value={ex.id}>{ex.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className={styles.chartContainer}>
+          {evolutionData.length > 0 ? (
+            <LoadEvolutionChart data={evolutionData} />
+          ) : (
+            <div className={styles.empty}>
+              {selectedExerciseId
+                ? "Ainda não há registros de peso para este exercício."
+                : "Selecione um treino e exercício para ver a evolução."}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 }
+
+export default WorkoutProgress;
