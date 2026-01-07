@@ -3,40 +3,54 @@
   bottom: 0;
   left: 0;
   right: 0;
-
-  height: 60px;
+  height: 65px;
   background: #ffffff;
-
   display: flex;
   justify-content: space-around;
   align-items: center;
-
   border-top: 1px solid #e2e8f0;
   z-index: 1000;
-
+  padding: 0 10px;
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+/* Estilo base para todos os links */
 .link {
   text-decoration: none;
   color: #64748b;
   font-size: 0.85rem;
   font-weight: 600;
-
+  
+  /* Centralização do texto */
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  
+  /* Espaçamento interno para criar o formato da pílula */
+  padding: 8px 16px; 
+  
+  /* Bordas totalmente arredondadas */
+  border-radius: 100px;
+  
+  /* Transição suave para a cor e fundo */
+  transition: all 0.3s ease;
 }
 
+/* Estilo específico para quando estiver ativo (Pílula) */
 .active {
+  
+  /* Cores de destaque (ajuste para a cor que desejar) */
+  background-color: #22c55e; /* Verde do seu projeto atual */
+  color: #ffffff;            /* Texto branco para contraste */
+  
+  /* Se o seu ambiente não suportar 'composes', 
+     copie as propriedades de .link aqui para garantir */
   text-decoration: none;
-  color: #22c55e;
   font-size: 0.85rem;
   font-weight: 700;
-
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: 100px;
 }
