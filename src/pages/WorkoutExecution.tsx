@@ -122,7 +122,8 @@ export function WorkoutExecution() {
       await push(logsRef, {
         workoutId: id,
         workoutName: workout.name,
-        date: new Date().toISOString(),
+        // Salva apenas YYYY-MM-DD
+        date: new Date().toLocaleDateString('en-CA'), 
         progress: calculateProgress(),
         weightsUsed: currentWeights
       });

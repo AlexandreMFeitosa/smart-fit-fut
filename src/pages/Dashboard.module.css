@@ -141,3 +141,37 @@
 .actionButton:active {
   transform: scale(0.97);
 }
+
+.concluidoContainer {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: #f0fdf4; /* Verde bem clarinho */
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #bbf7d0;
+  text-align: left;
+}
+
+.checkBadge {
+  background: #22c55e;
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+.concluidoInfo strong {
+  color: #166534;
+  display: block;
+}
+
+.concluidoInfo p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #15803d;
+}

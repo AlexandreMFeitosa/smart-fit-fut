@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
-import { db } from "../firebase"; // Importando a conexão com a nuvem
+import { db } from "../firebase";
 import { ref, get } from "firebase/database";
 import type { WorkoutLog } from "../types/workout";
 import { useNavigate } from "react-router-dom";
 import styles from "./WorkoutToday.module.css";
-import { formatDate } from "../utils/formatDate";
 
 export function WorkoutToday() {
   const [todayLogs, setTodayLogs] = useState<WorkoutLog[]>([]);
@@ -17,13 +16,15 @@ export function WorkoutToday() {
         const logsRef = ref(db, "logs");
         const snapshot = await get(logsRef);
 
-        // CORREÇÃO DA DATA: Pega a data local YYYY-MM-DD
+        // Gera a data de hoje local no formato YYYY-MM-DD
         const today = new Date().toLocaleDateString('en-CA');
 
         if (snapshot.exists()) {
           const allLogs = Object.values(snapshot.val()) as WorkoutLog[];
-          // Filtra apenas os logs realizados hoje na nuvem
+          
+          // Filtro comparando apenas a string da data (sem horas)
           const filtered = allLogs.filter((l) => l.date === today);
+        
           setTodayLogs(filtered);
         }
       } catch (error) {
@@ -58,17 +59,27 @@ export function WorkoutToday() {
         </>
       ) : (
         <>
-          <p className={styles.subtitle}>Parabéns! Treinos concluídos hoje:</p>
+          <p className={styles.subtitle}>Parabéns! Você concluiu {todayLogs.length} {todayLogs.length === 1 ? 'treino' : 'treinos'} hoje:</p>
+          
           {todayLogs.map((log, index) => (
             <div key={index} className={styles.card}>
-              <strong>✔ {log.workoutName}</strong>
-              <p>{formatDate(log.date)}</p>
+              <div className={styles.cardContent}>
+                <span className={styles.checkIcon}>✔</span>
+                <div className={styles.info}>
+                  <strong className={styles.workoutName}>
+                    {log.workoutName}
+                  </strong>
+                  <span className={styles.timestamp}>
+                    Concluído com sucesso!
+                  </span>
+                </div>
+              </div>
             </div>
           ))}
-          <button 
-            className={styles.secondary} 
+
+          <button
+            className={styles.secondary}
             onClick={() => navigate("/")}
-            style={{ marginTop: '20px' }}
           >
             Fazer outro treino
           </button>

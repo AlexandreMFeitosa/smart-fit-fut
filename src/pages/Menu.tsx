@@ -19,13 +19,6 @@ export default function Menu() {
       </NavLink>
 
       <NavLink
-        to="/treino-hoje"
-        className={({ isActive }) => (isActive ? styles.active : styles.link)}
-      >
-        Hoje
-      </NavLink>
-
-      <NavLink
         to="/historico"
         className={({ isActive }) => (isActive ? styles.active : styles.link)}
       >
