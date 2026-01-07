@@ -34,6 +34,10 @@
   
   /* Transição suave para a cor e fundo */
   transition: all 0.3s ease;
+
+  -webkit-tap-highlight-color: transparent;
+
+  touch-action: manipulation;
 }
 
 /* Estilo específico para quando estiver ativo (Pílula) */
