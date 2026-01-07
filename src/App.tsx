@@ -1,19 +1,20 @@
-  import { BrowserRouter, Routes, Route } from "react-router-dom";
-  import Dashboard from "./pages/Dashboard";
-  import Workouts from "./pages/Workouts";
-  import WorkoutToday from "./pages/WorkoutToday";
-  import WorkoutExecution from "./pages/WorkoutExecution";
-  import Menu from "./pages/Menu";
-  import { WorkoutHistory } from "./pages/WorkoutHistory";
-  import { AddWorkout } from "./pages/AddWorkout";
-  import { EditWorkout } from "./pages/EditWorkout";
-  import { WorkoutProgress } from "./pages/WorkoutProgress";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-  function App() {
-    return (
-      <BrowserRouter>
-        <Menu />
+import Dashboard from "./pages/Dashboard";
+import Workouts from "./pages/Workouts";
+import WorkoutToday from "./pages/WorkoutToday";
+import WorkoutExecution from "./pages/WorkoutExecution";
+import Menu from "./pages/Menu";
+import { WorkoutHistory } from "./pages/WorkoutHistory";
+import { AddWorkout } from "./pages/AddWorkout";
+import { EditWorkout } from "./pages/EditWorkout";
+import { WorkoutProgress } from "./pages/WorkoutProgress";
 
+function App() {
+  return (
+    <BrowserRouter>
+      {/* CONTEÚDO DAS PÁGINAS */}
+      <main className="page-content">
         <Routes>
           {/* DASHBOARD */}
           <Route path="/" element={<Dashboard />} />
@@ -31,8 +32,12 @@
           <Route path="/adicionar-treino" element={<AddWorkout />} />
           <Route path="/edit-workout/:id" element={<EditWorkout />} />
         </Routes>
-      </BrowserRouter>
-    );
-  }
+      </main>
 
-  export default App;
+      {/* MENU FIXO */}
+      <Menu />
+    </BrowserRouter>
+  );
+}
+
+export default App;

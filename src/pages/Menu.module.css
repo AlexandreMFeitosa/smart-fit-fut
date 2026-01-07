@@ -3,14 +3,18 @@
   bottom: 0;
   left: 0;
   right: 0;
+
   height: 60px;
-  background: white;
+  background: #ffffff;
+
   display: flex;
   justify-content: space-around;
   align-items: center;
+
   border-top: 1px solid #e2e8f0;
   z-index: 1000;
-  padding-bottom: env(safe-area-inset-bottom); /* Suporte para iPhone */
+
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .link {
@@ -18,6 +22,7 @@
   color: #64748b;
   font-size: 0.85rem;
   font-weight: 600;
+
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -25,10 +30,11 @@
 }
 
 .active {
-  color: #22c55e; /* Verde do seu tema */
   text-decoration: none;
+  color: #22c55e;
   font-size: 0.85rem;
   font-weight: 700;
+
   display: flex;
   flex-direction: column;
   align-items: center;

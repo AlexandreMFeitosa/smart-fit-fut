@@ -1,45 +1,41 @@
 /* Reset básico */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-  
-  /* Fonte confortável para mobile */
-  body {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-      Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background: #f5f6f8;
-    color: #1f2937;
-    -webkit-font-smoothing: antialiased;
-  }
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-  
-  /* Links */
-  a {
-    text-decoration: none;
-    color: inherit;
-  }
-  
-  /* Botões base */
-  button {
-    font-family: inherit;
-    border: none;
-    cursor: pointer;
-  }
-  
-  /* Evita zoom estranho no mobile */
-  input,
-  button,
-  textarea {
-    font-size: 16px;
-  }
-  
-  .app-container {
-    min-height: 100vh;
-    padding-top: 80px; /* ALTURA DO MENU */
-    background: #f4f6f8;
-    padding-bottom: 80px;
-  }
-  
-  
+/* Fonte confortável para mobile */
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background: #f5f6f8;
+  color: #1f2937;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Links */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Botões */
+button {
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+}
+
+/* Evita zoom estranho no mobile */
+input,
+button,
+textarea {
+  font-size: 16px;
+}
+
+/* CONTEÚDO DAS PÁGINAS */
+.page-content {
+  min-height: 100vh;
+  padding-bottom: calc(60px + env(safe-area-inset-bottom) + 16px);
+}

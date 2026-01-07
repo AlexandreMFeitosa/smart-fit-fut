@@ -32,7 +32,6 @@ export default function Menu() {
         Histórico
       </NavLink>
 
-      {/* NOVO LINK DE EVOLUÇÃO PADRONIZADO */}
       <NavLink
         to="/evolucao"
         className={({ isActive }) => (isActive ? styles.active : styles.link)}
