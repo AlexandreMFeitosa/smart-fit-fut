@@ -25,7 +25,7 @@ export function Dashboard() {
       const data = snapshot.val();
       const now = new Date();
       const monthPrefix = now.toISOString().slice(0, 7); // YYYY-MM
-      const today = now.toLocaleDateString('en-CA'); // YYYY-MM-DD local
+      const today = now.toLocaleDateString("en-CA"); // YYYY-MM-DD local
 
       const allLogs = Object.values(data) as any[];
 
@@ -56,8 +56,17 @@ export function Dashboard() {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <h1 className={styles.title}>Smart Fit Fut</h1>
-        <p className={styles.subtitleText}>Vamos manter o foco hoje 💪</p>
+        <div className={styles.brandContainer}>
+          <img
+            src="/icon-512.png"
+            className={styles.logo}
+            alt="Alpha Fit Logo"
+          />
+          <div className={styles.brandText}>
+            <h1 className={styles.title}>Alpha Fit Training</h1>
+            <p className={styles.subtitleText}>Vamos manter o foco hoje 💪</p>
+          </div>
+        </div>
       </header>
 
       {/* CARD PROGRESSO MENSAL */}
@@ -93,7 +102,9 @@ export function Dashboard() {
           </div>
         ) : (
           <>
-            <p className={styles.mutedText}>Você ainda não marcou um treino hoje</p>
+            <p className={styles.mutedText}>
+              Você ainda não marcou um treino hoje
+            </p>
             <button
               className={styles.primaryButton}
               onClick={() => navigate("/treinos")}
@@ -106,10 +117,16 @@ export function Dashboard() {
 
       {/* AÇÕES RÁPIDAS */}
       <section className={styles.actions}>
-        <button className={styles.actionButton} onClick={() => navigate("/adicionar-treino")}>
+        <button
+          className={styles.actionButton}
+          onClick={() => navigate("/adicionar-treino")}
+        >
           ➕ <span>Novo Treino</span>
         </button>
-        <button className={styles.actionButton} onClick={() => navigate("/historico")}>
+        <button
+          className={styles.actionButton}
+          onClick={() => navigate("/historico")}
+        >
           📅 <span>Histórico</span>
         </button>
       </section>
@@ -117,4 +134,4 @@ export function Dashboard() {
   );
 }
 
-export default Dashboard; 
+export default Dashboard;

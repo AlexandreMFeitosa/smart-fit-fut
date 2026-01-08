@@ -2,6 +2,7 @@
     max-width: 600px;
     margin: 0 auto;
     padding: 20px;
+    padding-bottom: 100px;
   }
   
   .title {
@@ -36,3 +37,10 @@
     background: #ddd;
     cursor: pointer;
   }  
+
+  .exerciseGrid { /* Ou a classe que envolve seus cards */
+    display: flex;
+    flex-direction: column;
+    gap: 16px; /* Isso garante o espaçamento igual ENTRE os treinos */
+    padding: 16px;
+  }
