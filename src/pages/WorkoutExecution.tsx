@@ -5,15 +5,18 @@ import { ref, get, push, update } from "firebase/database";
 import type { Workout, Exercise } from "../types/workout";
 import styles from "./WorkoutExecution.module.css";
 
-
 export function WorkoutExecution() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [workout, setWorkout] = useState<Workout | null>(null);
-  const [completedSets, setCompletedSets] = useState<{ [exerciseId: string]: number }>({});
-  const [currentWeights, setCurrentWeights] = useState<{ [exerciseId: string]: number }>({});
-  
+  const [completedSets, setCompletedSets] = useState<{
+    [exerciseId: string]: number;
+  }>({});
+  const [currentWeights, setCurrentWeights] = useState<{
+    [exerciseId: string]: number;
+  }>({});
+
   const [timer, setTimer] = useState<number | null>(null);
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null);
   const [isActive, setIsActive] = useState(false);
@@ -27,7 +30,7 @@ export function WorkoutExecution() {
         if (snapshot.exists()) {
           const data = snapshot.val();
           setWorkout(data);
-          
+
           const initialWeights: { [key: string]: number } = {};
           data.exercises.forEach((ex: Exercise) => {
             initialWeights[ex.id] = ex.weight;
@@ -45,7 +48,7 @@ export function WorkoutExecution() {
   useEffect(() => {
     const savedSets = localStorage.getItem(`workout_progress_${id}`);
     const savedWeights = localStorage.getItem(`workout_weights_${id}`);
-    
+
     if (savedSets) setCompletedSets(JSON.parse(savedSets));
     if (savedWeights) setCurrentWeights(JSON.parse(savedWeights));
   }, [id]);
@@ -53,10 +56,16 @@ export function WorkoutExecution() {
   // 3. PERSISTÊNCIA: LocalStorage
   useEffect(() => {
     if (Object.keys(completedSets).length > 0) {
-      localStorage.setItem(`workout_progress_${id}`, JSON.stringify(completedSets));
+      localStorage.setItem(
+        `workout_progress_${id}`,
+        JSON.stringify(completedSets)
+      );
     }
     if (Object.keys(currentWeights).length > 0) {
-      localStorage.setItem(`workout_weights_${id}`, JSON.stringify(currentWeights));
+      localStorage.setItem(
+        `workout_weights_${id}`,
+        JSON.stringify(currentWeights)
+      );
     }
   }, [completedSets, currentWeights, id]);
 
@@ -64,7 +73,10 @@ export function WorkoutExecution() {
   useEffect(() => {
     let interval: any;
     if (isActive && timer !== null && timer > 0) {
-      interval = setInterval(() => setTimer((t) => (t !== null ? t - 1 : null)), 1000);
+      interval = setInterval(
+        () => setTimer((t) => (t !== null ? t - 1 : null)),
+        1000
+      );
     } else if (timer === 0) {
       handleTimerEnd();
     }
@@ -75,13 +87,15 @@ export function WorkoutExecution() {
     setIsActive(false);
     setTimer(null);
     setActiveExerciseId(null);
-    const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+    const beep = new Audio(
+      "https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
+    );
     beep.play().catch(() => {});
   }
 
   const handleWeightChange = (exerciseId: string, value: string) => {
     const newWeight = parseFloat(value) || 0;
-    setCurrentWeights(prev => ({ ...prev, [exerciseId]: newWeight }));
+    setCurrentWeights((prev) => ({ ...prev, [exerciseId]: newWeight }));
   };
 
   // NOVO: Função para ver evolução
@@ -91,15 +105,24 @@ export function WorkoutExecution() {
 
   const toggleExerciseFull = (exerciseId: string, totalSeries: number) => {
     const isCurrentlyFull = (completedSets[exerciseId] || 0) === totalSeries;
-    setCompletedSets((prev) => ({ ...prev, [exerciseId]: isCurrentlyFull ? 0 : totalSeries }));
+    setCompletedSets((prev) => ({
+      ...prev,
+      [exerciseId]: isCurrentlyFull ? 0 : totalSeries,
+    }));
   };
 
   function toggleSet(exerciseId: string, setIndex: number) {
     const currentCompleted = completedSets[exerciseId] || 0;
     if (setIndex + 1 === currentCompleted) {
-      setCompletedSets({ ...completedSets, [exerciseId]: currentCompleted - 1 });
+      setCompletedSets({
+        ...completedSets,
+        [exerciseId]: currentCompleted - 1,
+      });
     } else if (setIndex === currentCompleted) {
-      setCompletedSets({ ...completedSets, [exerciseId]: currentCompleted + 1 });
+      setCompletedSets({
+        ...completedSets,
+        [exerciseId]: currentCompleted + 1,
+      });
       const ex = workout?.exercises.find((e) => e.id === exerciseId);
       setTimer(ex?.rest || 60);
       setIsActive(true);
@@ -123,15 +146,15 @@ export function WorkoutExecution() {
         workoutId: id,
         workoutName: workout.name,
         // Salva apenas YYYY-MM-DD
-        date: new Date().toLocaleDateString('en-CA'), 
+        date: new Date().toLocaleDateString("en-CA"),
         progress: calculateProgress(),
-        weightsUsed: currentWeights
+        weightsUsed: currentWeights,
       });
 
       const workoutRef = ref(db, `treinos/${id}`);
-      const updatedExercises = workout.exercises.map(ex => ({
+      const updatedExercises = workout.exercises.map((ex) => ({
         ...ex,
-        weight: currentWeights[ex.id] || ex.weight
+        weight: currentWeights[ex.id] || ex.weight,
       }));
       await update(workoutRef, { exercises: updatedExercises });
 
@@ -154,7 +177,10 @@ export function WorkoutExecution() {
 
       <div className={styles.progressContainer}>
         <div className={styles.progressBar}>
-          <div className={styles.progressFill} style={{ width: `${calculateProgress()}%` }} />
+          <div
+            className={styles.progressFill}
+            style={{ width: `${calculateProgress()}%` }}
+          />
         </div>
         <p>{calculateProgress()}% concluído</p>
       </div>
@@ -171,34 +197,49 @@ export function WorkoutExecution() {
               />
               <div className={styles.exerciseMainInfo}>
                 <strong>{ex.name}</strong>
-                <p>{ex.series} séries x {ex.reps} reps</p>
+
+                {/* EXERCÍCIO SUBSTITUTO - Aparece logo abaixo do nome */}
+                {ex.substitute && (
+                  <p className={styles.substituteText}>
+                    Substituto: <span>{ex.substitute}</span>
+                  </p>
+                )}
+
+                <p className={styles.seriesInfo}>
+                  {ex.series} séries x {ex.reps} reps
+                </p>
               </div>
 
               <div className={styles.infoColumn}>
                 <div className={styles.weightColumn}>
                   <div className={styles.weightInputWrapper}>
-                    <input 
-                      type="number" 
+                    <input
+                      type="number"
                       className={styles.weightInput}
                       value={currentWeights[ex.id] ?? ex.weight}
-                      onChange={(e) => handleWeightChange(ex.id, e.target.value)}
+                      onChange={(e) =>
+                        handleWeightChange(ex.id, e.target.value)
+                      }
                     />
                     <span className={styles.weightUnit}>kg</span>
                   </div>
-                  
+
                   {/* ATALHO PARA EVOLUÇÃO */}
-                  <button 
+                  <button
                     className={styles.evolutionLink}
                     type="button"
                     onClick={() => handleSeeEvolution(ex.id)}
                   >
                     📈 Histórico
                   </button>
-                  
                 </div>
 
                 {activeExerciseId === ex.id && timer !== null && (
-                  <span className={`${styles.inlineTimer} ${timer < 10 ? styles.timerUrgent : ""}`}>
+                  <span
+                    className={`${styles.inlineTimer} ${
+                      timer < 10 ? styles.timerUrgent : ""
+                    }`}
+                  >
                     {timer}s
                   </span>
                 )}
