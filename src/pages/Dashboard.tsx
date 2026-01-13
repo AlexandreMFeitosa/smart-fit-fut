@@ -6,8 +6,8 @@ import styles from "./Dashboard.module.css";
 import { useAuth } from "../contexts/AuthContext";
 
 export function Dashboard() {
-  const navigate = useNavigate();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(0);

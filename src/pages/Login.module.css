@@ -52,3 +52,98 @@
     width: 20px;
     height: 20px;
   }
+
+  .pageWrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f8fafc;
+  }
+  
+  .card {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+  
+  .inputGroup {
+    text-align: left;
+    margin-bottom: 1rem;
+  }
+  
+  .inputGroup label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+    color: #475569;
+  }
+  
+  .inputGroup input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    outline: none;
+  }
+  
+  .btnPrimary {
+    width: 100%;
+    padding: 0.8rem;
+    background-color: #10b981; /* Verde do seu app */
+    color: white;
+    border: none;
+    border-radius: 999px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 1rem;
+  }
+  
+  .divider {
+    margin: 1.5rem 0;
+    position: relative;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  .divider span {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 0 10px;
+    color: #94a3b8;
+    font-size: 0.875rem;
+  }
+  
+  .btnGoogle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 0.8rem;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  
+  .errorMessage {
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+  }
+  
+  .footer span {
+    color: #10b981;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
