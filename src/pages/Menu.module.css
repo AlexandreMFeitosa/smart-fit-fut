@@ -58,3 +58,27 @@
   padding: 8px 16px;
   border-radius: 100px;
 }
+
+.logoutButton {
+  background-color: #fee2e2; /* Vermelho muito suave (pastel) */
+  color: #ef4444;            /* Texto em vermelho vivo para contraste */
+  padding: 6px 20px;         /* Ajuste para ficar no mesmo tamanho dos NavLinks */
+  border-radius: 999px;      /* Formato de pílula */
+  border: 1px solid #fecaca; /* Borda sutil */
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 10px;         /* Espaço do link anterior */
+  font-family: inherit;      /* Mantém a fonte do resto do app */
+}
+
+.logoutButton:hover {
+  background-color: #fecaca; /* Escurece levemente ao passar o mouse */
+  color: #b91c1c;            /* Texto fica um pouco mais escuro */
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.logoutButton:active {
+  transform: translateY(0);
+}

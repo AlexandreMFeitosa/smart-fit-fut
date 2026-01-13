@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { db } from "../firebase";
 import { ref, get } from "firebase/database";
-import { useSearchParams } from "react-router-dom";
-import { LoadEvolutionChart } from "../components/LoadEvolutionChart";
+import { useAuth } from "../contexts/AuthContext";
+import { useSearchParams } from "react-router-dom"; // Importante para ler a URL
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import styles from "./WorkoutProgress.module.css";
 
+// --- Interfaces ---
 interface Exercise {
   id: string;
   name: string;
@@ -22,69 +24,67 @@ interface WorkoutLog {
 }
 
 export function WorkoutProgress() {
+  const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [selectedWorkoutId, setSelectedWorkoutId] = useState<string>("");
   const [selectedExerciseId, setSelectedExerciseId] = useState<string>("");
   const [allLogs, setAllLogs] = useState<WorkoutLog[]>([]);
   const [evolutionData, setEvolutionData] = useState<{ date: string; weight: number }[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  // Hook para ler parâmetros da URL (ex: ?workoutId=123&exerciseId=456)
-  const [searchParams] = useSearchParams();
 
-  // 1. Busca inicial de dados (Treinos e Logs)
+  // 1. Busca Inicial: Treinos e Logs do Usuário
   useEffect(() => {
     async function fetchData() {
+      if (!user) return;
+
       try {
-        const workoutsRef = ref(db, "treinos");
-        const logsRef = ref(db, "logs");
-        
-        const [workoutsSnap, logsSnap] = await Promise.all([
-          get(workoutsRef),
-          get(logsRef),
-        ]);
-  
+        setLoading(true);
+
+        // Buscar Treinos do Usuário
+        const workoutsSnap = await get(ref(db, `users/${user.uid}/treinos`));
+        let workoutsList: Workout[] = [];
         if (workoutsSnap.exists()) {
-          const data = workoutsSnap.val();
-          const workoutsList = Object.keys(data).map((key) => ({
-            id: key,
-            name: data[key].name || data[key].nome || "Treino sem nome",
-            exercises: (data[key].exercises || data[key].exercicios || []).map((ex: any, index: number) => ({
-              id: ex.id || `ex-${index}`,
-              name: ex.name || ex.nome || "Exercício sem nome",
-            })),
+          workoutsList = Object.entries(workoutsSnap.val()).map(([id, w]: any) => ({
+            id,
+            name: w.name,
+            exercises: w.exercises || [],
           }));
-        
           setWorkouts(workoutsList);
-          
-          // Lógica de seleção inicial: URL primeiro, se não, o primeiro da lista
-          const workoutIdFromUrl = searchParams.get("workoutId");
-          if (workoutIdFromUrl) {
-            setSelectedWorkoutId(workoutIdFromUrl);
-          } else if (workoutsList.length > 0) {
-            setSelectedWorkoutId(workoutsList[0].id);
-          }
         }
-  
+
+        // Buscar Logs do Usuário
+        const logsSnap = await get(ref(db, `users/${user.uid}/logs`));
         if (logsSnap.exists()) {
-          setAllLogs(Object.values(logsSnap.val()));
+          const logsArray = Object.values(logsSnap.val()) as WorkoutLog[];
+          setAllLogs(logsArray);
         }
-      } catch (err) {
-        console.error("Erro na busca:", err);
+
+        // Definir seleções iniciais baseadas na URL ou no primeiro treino
+        const workoutIdFromUrl = searchParams.get("workoutId");
+        if (workoutIdFromUrl && workoutsList.some(w => w.id === workoutIdFromUrl)) {
+          setSelectedWorkoutId(workoutIdFromUrl);
+        } else if (workoutsList.length > 0) {
+          setSelectedWorkoutId(workoutsList[0].id);
+        }
+
+      } catch (error) {
+        console.error("Erro ao carregar dados de evolução:", error);
       } finally {
         setLoading(false);
       }
     }
+
     fetchData();
-  }, [searchParams]);
+  }, [user, searchParams]);
 
   // 2. Atualiza o exercício selecionado quando o treino muda
   useEffect(() => {
-    const exerciseIdFromUrl = searchParams.get("exerciseId");
     const currentWorkout = workouts.find((w) => w.id === selectedWorkoutId);
+    const exerciseIdFromUrl = searchParams.get("exerciseId");
 
     if (currentWorkout && currentWorkout.exercises.length > 0) {
-      // Se viemos de um atalho (URL), usamos esse ID. Se não, pegamos o primeiro do treino.
       if (exerciseIdFromUrl && currentWorkout.exercises.some(e => e.id === exerciseIdFromUrl)) {
         setSelectedExerciseId(exerciseIdFromUrl);
       } else {
@@ -95,17 +95,14 @@ export function WorkoutProgress() {
     }
   }, [selectedWorkoutId, workouts, searchParams]);
 
-  // 3. Filtra os pesos para gerar o gráfico
+  // 3. Filtra os dados para o gráfico
   useEffect(() => {
-    if (selectedExerciseId) {
+    if (selectedExerciseId && allLogs.length > 0) {
       const data = allLogs
         .filter((log) => log.weightsUsed && log.weightsUsed[selectedExerciseId] !== undefined)
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
         .map((log) => ({
-          date: new Date(log.date).toLocaleDateString("pt-BR", {
-            day: "2-digit",
-            month: "2-digit",
-          }),
+          date: new Date(log.date).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
           weight: Number(log.weightsUsed![selectedExerciseId]) || 0,
         }));
       setEvolutionData(data);
@@ -125,12 +122,13 @@ export function WorkoutProgress() {
 
         <div className={styles.filterSection}>
           <div className={styles.field}>
-            <label>Selecione o Treino:</label>
-            <select
-              value={selectedWorkoutId}
+            <label>Treino:</label>
+            <select 
+              value={selectedWorkoutId} 
               onChange={(e) => setSelectedWorkoutId(e.target.value)}
               className={styles.select}
             >
+              <option value="">Selecione um treino</option>
               {workouts.map((w) => (
                 <option key={w.id} value={w.id}>{w.name}</option>
               ))}
@@ -138,9 +136,9 @@ export function WorkoutProgress() {
           </div>
 
           <div className={styles.field}>
-            <label>Selecione o Exercício:</label>
-            <select
-              value={selectedExerciseId}
+            <label>Exercício:</label>
+            <select 
+              value={selectedExerciseId} 
               onChange={(e) => setSelectedExerciseId(e.target.value)}
               className={styles.select}
               disabled={currentExercises.length === 0}
@@ -154,12 +152,28 @@ export function WorkoutProgress() {
 
         <div className={styles.chartContainer}>
           {evolutionData.length > 0 ? (
-            <LoadEvolutionChart data={evolutionData} />
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={evolutionData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                <XAxis dataKey="date" stroke="#94a3b8" />
+                <YAxis stroke="#94a3b8" />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="weight" 
+                  stroke="#10b981" 
+                  strokeWidth={3} 
+                  dot={{ r: 6, fill: '#10b981' }} 
+                />
+              </LineChart>
+            </ResponsiveContainer>
           ) : (
             <div className={styles.empty}>
-              {selectedExerciseId
-                ? "Ainda não há registros de peso para este exercício."
-                : "Selecione um treino e exercício para ver a evolução."}
+              {selectedExerciseId 
+                ? "Ainda não há registros de peso para este exercício." 
+                : "Selecione um treino para ver a evolução."}
             </div>
           )}
         </div>

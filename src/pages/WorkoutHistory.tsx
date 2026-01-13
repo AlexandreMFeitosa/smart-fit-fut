@@ -3,6 +3,7 @@ import { db } from "../firebase";
 import { ref, get, remove, push, update } from "firebase/database";
 import styles from "./WorkoutHistory.module.css";
 import { formatDate } from "../utils/formatDate";
+import { useAuth } from "../contexts/AuthContext";
 
 interface Workout {
   id: string;
@@ -20,6 +21,7 @@ interface WorkoutLog {
 type LogsByDate = { [date: string]: WorkoutLog[] };
 
 export function WorkoutHistory() {
+  const { user } = useAuth();
   const [logsByDate, setLogsByDate] = useState<LogsByDate>({});
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -35,29 +37,25 @@ export function WorkoutHistory() {
 
   useEffect(() => {
     async function fetchData() {
+      if (!user) return; // Garante que o usuário está logado
+
       try {
-        // 🔹 Buscar treinos disponíveis
-        const workoutsSnap = await get(ref(db, "treinos"));
+        // 🔹 Buscar treinos disponíveis na pasta do usuário
+        const workoutsSnap = await get(ref(db, `users/${user.uid}/treinos`));
         if (workoutsSnap.exists()) {
           const workoutsData = workoutsSnap.val();
           const workoutsArray: Workout[] = Object.entries(workoutsData).map(
-            ([id, w]: any) => ({
-              id,
-              name: w.name,
-            })
+            ([id, w]: any) => ({ id, name: w.name })
           );
           setWorkouts(workoutsArray);
         }
 
-        // 🔹 Buscar histórico
-        const logsSnap = await get(ref(db, "logs"));
+        // 🔹 Buscar histórico na pasta do usuário
+        const logsSnap = await get(ref(db, `users/${user.uid}/logs`));
         if (logsSnap.exists()) {
           const logsData = logsSnap.val();
           const logsArray: WorkoutLog[] = Object.entries(logsData).map(
-            ([id, log]: any) => ({
-              id,
-              ...log,
-            })
+            ([id, log]: any) => ({ id, ...(log as any) })
           );
 
           const grouped = logsArray.reduce((acc: LogsByDate, log) => {
@@ -75,9 +73,8 @@ export function WorkoutHistory() {
         setLoading(false);
       }
     }
-
     fetchData();
-  }, []);
+  }, [user]); // Adicione 'user' como dependência
 
   function handleSelectDate(dateKey: string) {
     setSelectedDate(selectedDate === dateKey ? null : dateKey);
@@ -86,10 +83,11 @@ export function WorkoutHistory() {
   }
 
   async function handleDelete(logId: string) {
-    if (!confirm("Deseja excluir este treino?")) return;
-
-    await remove(ref(db, `logs/${logId}`));
-
+    if (!user || !confirm("Deseja excluir este treino?")) return;
+  
+    // Caminho atualizado com o UID do usuário
+    await remove(ref(db, `users/${user.uid}/logs/${logId}`));
+  
     setLogsByDate((prev) => {
       const updated = { ...prev };
       Object.keys(updated).forEach((date) => {
@@ -101,45 +99,53 @@ export function WorkoutHistory() {
   }
 
   async function handleSave(date: string) {
-    if (!selectedWorkoutId) return;
-
+    if (!user || !selectedWorkoutId) return;
+  
     const workout = workouts.find((w) => w.id === selectedWorkoutId);
     if (!workout) return;
-
-    // ✏️ Editar
-    if (editingLog) {
-      await update(ref(db, `logs/${editingLog.id}`), {
-        workoutId: workout.id,
-        workoutName: workout.name,
-      });
-
-      setLogsByDate((prev) => ({
-        ...prev,
-        [date]: prev[date].map((l) =>
-          l.id === editingLog.id
-            ? { ...l, workoutId: workout.id, workoutName: workout.name }
-            : l
-        ),
-      }));
-    } 
-    // ➕ Adicionar
-    else {
-      const newLog = {
-        workoutId: workout.id,
-        workoutName: workout.name,
-        date,
-        progress: 100,
-      };
-
-      const newRef = push(ref(db, "logs"));
-      await update(newRef, newLog);
-
-      setLogsByDate((prev) => ({
-        ...prev,
-        [date]: [...(prev[date] || []), { id: newRef.key!, ...newLog }],
-      }));
+  
+    try {
+      // ✏️ EDITAR LOG EXISTENTE
+      if (editingLog) {
+        const logPath = `users/${user.uid}/logs/${editingLog.id}`; // Caminho com UID
+        await update(ref(db, logPath), {
+          workoutId: workout.id,
+          workoutName: workout.name,
+        });
+  
+        setLogsByDate((prev) => ({
+          ...prev,
+          [date]: prev[date].map((l) =>
+            l.id === editingLog.id
+              ? { ...l, workoutId: workout.id, workoutName: workout.name }
+              : l
+          ),
+        }));
+      } 
+      // ➕ ADICIONAR NOVO LOG MANUALMENTE
+      else {
+        const newLog = {
+          workoutId: workout.id,
+          workoutName: workout.name,
+          date,
+          progress: 100,
+        };
+  
+        // Referência para a lista de logs do usuário
+        const logsRef = ref(db, `users/${user.uid}/logs`);
+        const newRef = push(logsRef);
+        await update(newRef, newLog);
+  
+        setLogsByDate((prev) => ({
+          ...prev,
+          [date]: [...(prev[date] || []), { id: newRef.key!, ...newLog }],
+        }));
+      }
+    } catch (error) {
+      console.error("Erro ao salvar log:", error);
+      alert("Erro ao salvar. Verifique sua permissão.");
     }
-
+  
     setEditingLog(null);
     setSelectedWorkoutId("");
   }
@@ -156,7 +162,10 @@ export function WorkoutHistory() {
         <div className={styles.calendar}>
           {Array.from({ length: daysInMonth }, (_, i) => {
             const day = i + 1;
-            const dateKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+            const dateKey = `${year}-${String(month + 1).padStart(
+              2,
+              "0"
+            )}-${String(day).padStart(2, "0")}`;
             const hasWorkout = !!logsByDate[dateKey];
 
             return (
@@ -176,9 +185,7 @@ export function WorkoutHistory() {
 
         {selectedDate && (
           <div className={styles.details}>
-            <h2 className={styles.detailsTitle}>
-              {formatDate(selectedDate)}
-            </h2>
+            <h2 className={styles.detailsTitle}>{formatDate(selectedDate)}</h2>
 
             {logsByDate[selectedDate]?.map((log) => (
               <div key={log.id} className={styles.card}>
@@ -187,10 +194,12 @@ export function WorkoutHistory() {
                 </div>
 
                 <div className={styles.actions}>
-                  <button onClick={() => {
-                    setEditingLog(log);
-                    setSelectedWorkoutId(log.workoutId);
-                  }}>
+                  <button
+                    onClick={() => {
+                      setEditingLog(log);
+                      setSelectedWorkoutId(log.workoutId);
+                    }}
+                  >
                     Editar
                   </button>
 
@@ -218,9 +227,7 @@ export function WorkoutHistory() {
                   ))}
                 </select>
 
-                <button onClick={() => handleSave(selectedDate)}>
-                  Salvar
-                </button>
+                <button onClick={() => handleSave(selectedDate)}>Salvar</button>
               </div>
             )}
           </div>

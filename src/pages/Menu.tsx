@@ -1,7 +1,11 @@
 import { NavLink } from "react-router-dom";
 import styles from "./Menu.module.css";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Menu() {
+  // A CHAMADA DO HOOK DEVE FICAR AQUI DENTRO!
+  const { logout, user } = useAuth();
+
   return (
     <nav className={styles.menu}>
       <NavLink
@@ -31,6 +35,13 @@ export default function Menu() {
       >
         Evolução
       </NavLink>
+
+      {/* Botão de Logout só aparece se houver usuário logado */}
+      {user && (
+        <button onClick={logout} className={styles.logoutButton}>
+          Sair
+        </button>
+      )}
     </nav>
   );
 }

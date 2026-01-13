@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getDatabase } from "firebase/database"; // Mudou aqui
+import { getDatabase } from "firebase/database";
+import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyD-EWIWg7W6j_WGZ1l5eeoeALthl3bgH1k",
@@ -11,7 +12,9 @@ const firebaseConfig = {
   measurementId: "G-34EZJ45SEP"
 };
 
+// Inicializa o Firebase uma única vez
 const app = initializeApp(firebaseConfig);
 
-// Exportamos o 'db' do Realtime Database agora
+// Exporta os serviços para usar no restante do app
 export const db = getDatabase(app);
+export const auth = getAuth(app);
