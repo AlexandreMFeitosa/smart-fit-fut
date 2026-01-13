@@ -3,8 +3,10 @@ import styles from "./Menu.module.css";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function Menu() {
-  // A CHAMADA DO HOOK DEVE FICAR AQUI DENTRO!
   const { logout, user } = useAuth();
+
+  // Se não houver usuário logado, o menu não renderiza nada
+  if (!user) return null;
 
   return (
     <nav className={styles.menu}>
@@ -36,12 +38,9 @@ export default function Menu() {
         Evolução
       </NavLink>
 
-      {/* Botão de Logout só aparece se houver usuário logado */}
-      {user && (
-        <button onClick={logout} className={styles.logoutButton}>
-          Sair
-        </button>
-      )}
+      <button onClick={logout} className={styles.logoutButton}>
+        Sair
+      </button>
     </nav>
   );
 }
