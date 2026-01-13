@@ -2,11 +2,13 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Exercise } from "../types/workout";
 import { db } from "../firebase";
-import { ref, push, set } from "firebase/database";
+import { ref, push } from "firebase/database";
 import { v4 as uuid } from "uuid";
 import styles from "./AddWorkout.module.css";
+import { useAuth } from "../contexts/AuthContext";
 
 export function AddWorkout() {
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
@@ -20,10 +22,7 @@ export function AddWorkout() {
   const [rest, setRest] = useState(60);
 
   function handleAddExercise() {
-    if (!exerciseName.trim() || !substitute.trim()) {
-      alert("Preencha o exercício e o substituto");
-      return;
-    }
+    if (!exerciseName.trim()) return;
 
     const newExercise: Exercise = {
       id: uuid(),
@@ -47,6 +46,7 @@ export function AddWorkout() {
   }
 
   async function handleSaveWorkout() {
+    if (!user) return;
     if (!name.trim() || exercises.length === 0) {
       alert("Adicione um nome e ao menos um exercício.");
       return;
@@ -54,20 +54,22 @@ export function AddWorkout() {
 
     setIsSaving(true);
     try {
-      const workoutsRef = ref(db, "treinos");
-      const newWorkoutRef = push(workoutsRef);
-
-      await set(newWorkoutRef, {
-        name,
-        exercises,
+      const workoutData = {
+        name: name.trim(),
+        exercises: exercises,
         createdAt: new Date().toISOString(),
-      });
+      };
 
-      alert("Treino salvo na nuvem!");
-      navigate("/");
+      // 3. Referência para a pasta PRIVADA do usuário
+      const userWorkoutsRef = ref(db, `users/${user.uid}/treinos`);
+
+      // 4. Salvar no Firebase
+      await push(userWorkoutsRef, workoutData);
+
+      navigate("/treinos");
     } catch (error) {
       console.error("Erro ao salvar:", error);
-      alert("Falha ao salvar. Verifique o console.");
+      alert("Erro ao salvar o treino. Verifique sua conexão.");
     } finally {
       setIsSaving(false);
     }
@@ -105,7 +107,7 @@ export function AddWorkout() {
               onChange={(e) => setSubstitute(e.target.value)}
             />
           </div>
-          
+
           <div className={styles.row}>
             <div className={styles.inputGroup}>
               <label>Séries</label>
@@ -150,10 +152,14 @@ export function AddWorkout() {
               <li key={ex.id} className={styles.exerciseItem}>
                 <div>
                   <strong>{ex.name}</strong>
-                  <p>{ex.series}x{ex.reps} - {ex.weight}kg</p>
-                  <small style={{ color: "#64748b" }}>Sub: {ex.substitute}</small>
+                  <p>
+                    {ex.series}x{ex.reps} - {ex.weight}kg
+                  </p>
+                  <small style={{ color: "#64748b" }}>
+                    Sub: {ex.substitute}
+                  </small>
                 </div>
-                <button 
+                <button
                   onClick={() => removeExercise(ex.id)}
                   className={styles.btnRemove}
                 >

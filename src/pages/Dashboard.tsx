@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { db } from "../firebase";
 import { ref, get } from "firebase/database";
 import styles from "./Dashboard.module.css";
+import { useAuth } from "../contexts/AuthContext";
 
 export function Dashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(0);
@@ -17,19 +19,34 @@ export function Dashboard() {
 
   useEffect(() => {
     async function fetchDashboardData() {
-      const logsRef = ref(db, "logs");
-      const snapshot = await get(logsRef);
+      // 3. Só buscar dados se o usuário estiver carregado
+      if (!user) return;
 
-      if (!snapshot.exists()) return;
+      // 4. Mudar o caminho para a "pasta" exclusiva do usuário
+      const userLogsRef = ref(db, `users/${user.uid}/logs`); 
+      const snapshot = await get(userLogsRef);
+
+      if (!user) {
+        return <div style={{ padding: "20px", textAlign: "center" }}>Carregando perfil...</div>;
+      }
+
+      if (!snapshot.exists()) {
+        // Se for um usuário novo sem treinos, resetamos os estados
+        setDone(0);
+        setProgress(0);
+        setLastWorkout(null);
+        setTodayWorkout(null);
+        return;
+      }
 
       const data = snapshot.val();
       const now = new Date();
-      const monthPrefix = now.toISOString().slice(0, 7); // YYYY-MM
-      const today = now.toLocaleDateString("en-CA"); // YYYY-MM-DD local
+      const monthPrefix = now.toISOString().slice(0, 7);
+      const today = now.toLocaleDateString("en-CA");
 
       const allLogs = Object.values(data) as any[];
 
-      // 1. Filtrar treinos do mês
+      // 1. Filtrar treinos do mês (agora apenas do usuário logado)
       const logsThisMonth = allLogs.filter(
         (log) => log.date && log.date.startsWith(monthPrefix)
       );
@@ -38,7 +55,7 @@ export function Dashboard() {
       const workoutDoneToday = allLogs.find((l) => l.date === today);
       setTodayWorkout(workoutDoneToday);
 
-      // 3. Pegar último treino para o progresso
+      // 3. Pegar último treino
       if (allLogs.length > 0) {
         const sorted = [...allLogs].sort(
           (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -51,20 +68,17 @@ export function Dashboard() {
     }
 
     fetchDashboardData();
-  }, []);
+  }, [user]); // 5. Dependência do user para recarregar se o login mudar
 
   return (
     <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.brandContainer}>
-          <img
-            src="/icon-512.png"
-            className={styles.logo}
-            alt="Alpha Fit Logo"
-          />
+          <img src="/icon-512.png" className={styles.logo} alt="Alpha Fit Logo" />
           <div className={styles.brandText}>
             <h1 className={styles.title}>Alpha Fit Training</h1>
-            <p className={styles.subtitleText}>Vamos manter o foco hoje 💪</p>
+            {/* 6. Dica de portfólio: Usar o nome do usuário vindo do Google */}
+            <p className={styles.subtitleText}>Foco total, {user?.displayName?.split(' ')[0]}! 💪</p>
           </div>
         </div>
       </header>

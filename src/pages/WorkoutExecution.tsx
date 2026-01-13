@@ -5,6 +5,8 @@ import { ref, get, push, update } from "firebase/database";
 import type { Workout, Exercise } from "../types/workout";
 import styles from "./WorkoutExecution.module.css";
 
+import { useAuth } from "../contexts/AuthContext";
+
 export function WorkoutExecution() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -21,28 +23,35 @@ export function WorkoutExecution() {
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null);
   const [isActive, setIsActive] = useState(false);
 
-  // 1. Busca inicial do treino
-  useEffect(() => {
-    async function fetchWorkout() {
-      try {
-        const workoutRef = ref(db, `treinos/${id}`);
-        const snapshot = await get(workoutRef);
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          setWorkout(data);
+  const { user } = useAuth();
 
-          const initialWeights: { [key: string]: number } = {};
-          data.exercises.forEach((ex: Exercise) => {
-            initialWeights[ex.id] = ex.weight;
-          });
-          setCurrentWeights(initialWeights);
-        }
-      } catch (err) {
-        console.error("Erro ao buscar treino:", err);
+  // 1. Busca inicial do treino
+  // 1. Busca inicial do treino (AJUSTADO PARA PASTA DO USUÁRIO)
+useEffect(() => {
+  async function fetchWorkout() {
+    if (!user || !id) return; // Garante que temos o ID e o Usuário
+
+    try {
+      // Agora buscamos na subpasta do usuário logado
+      const workoutRef = ref(db, `users/${user.uid}/treinos/${id}`);
+      const snapshot = await get(workoutRef);
+      
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        setWorkout(data);
+
+        const initialWeights: { [key: string]: number } = {};
+        data.exercises.forEach((ex: Exercise) => {
+          initialWeights[ex.id] = ex.weight;
+        });
+        setCurrentWeights(initialWeights);
       }
+    } catch (err) {
+      console.error("Erro ao buscar treino:", err);
     }
-    fetchWorkout();
-  }, [id]);
+  }
+  fetchWorkout();
+}, [id, user]); // Adicione 'user' como dependência
 
   // 2. RECUPERAÇÃO: LocalStorage
   useEffect(() => {
@@ -139,30 +148,40 @@ export function WorkoutExecution() {
   };
 
   async function handleFinishWorkout() {
-    if (!workout) return;
+    // 1. Verificamos se o treino e o usuário existem
+    if (!workout || !user) return;
+
     try {
-      const logsRef = ref(db, "logs");
+      // 2. Referência para os LOGS (Histórico) dentro da pasta do usuário
+      const logsRef = ref(db, `users/${user.uid}/logs`);
+
       await push(logsRef, {
         workoutId: id,
         workoutName: workout.name,
-        // Salva apenas YYYY-MM-DD
+        // Salva apenas YYYY-MM-DD para facilitar a busca no Dashboard
         date: new Date().toLocaleDateString("en-CA"),
         progress: calculateProgress(),
         weightsUsed: currentWeights,
       });
 
-      const workoutRef = ref(db, `treinos/${id}`);
+      // 3. Atualização de Pesos: agora salvamos na lista de treinos PRIVADA do usuário
+      // Importante: Para isso funcionar, o seu cadastro de treinos também deve salvar em `users/${user.uid}/treinos`
+      const workoutRef = ref(db, `users/${user.uid}/treinos/${id}`);
+
       const updatedExercises = workout.exercises.map((ex) => ({
         ...ex,
         weight: currentWeights[ex.id] || ex.weight,
       }));
+
       await update(workoutRef, { exercises: updatedExercises });
 
+      // Limpeza de cache local
       localStorage.removeItem(`workout_progress_${id}`);
       localStorage.removeItem(`workout_weights_${id}`);
+
       navigate("/");
     } catch (err) {
-      console.error(err);
+      console.error("Erro ao salvar treino:", err);
     }
   }
 
