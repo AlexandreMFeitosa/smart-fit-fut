@@ -1,0 +1,6 @@
+.app-container {
+    width: 80%; /* Ou um valor fixo como 800px */
+    max-width: 1000px;
+    margin: 0 auto; /* Centraliza horizontalmente */
+  }
+  

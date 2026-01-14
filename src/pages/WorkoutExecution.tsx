@@ -7,6 +7,7 @@ import styles from "./WorkoutExecution.module.css";
 
 import { useAuth } from "../contexts/AuthContext";
 
+
 export function WorkoutExecution() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -250,6 +251,15 @@ useEffect(() => {
                     onClick={() => handleSeeEvolution(ex.id)}
                   >
                     📈 Histórico
+                  </button>
+
+                  {/* ATALHO PARA VER DETALHES */}
+                  <button
+                    className={styles.evolutionLink}
+                    type="button"
+                    onClick={() => navigate('/detalhes')}
+                  >
+                    📈 Detalhes
                   </button>
                 </div>
 

@@ -45,9 +45,16 @@ export function Workouts() {
   if (loading) return <div>Carregando treinos...</div>;
 
   async function handleDelete(id: string) {
+    if (!user) return; // Segurança: verifica se existe usuário
+  
     if (confirm("Deseja excluir este treino da nuvem?")) {
       try {
-        await remove(ref(db, `treinos/${id}`));
+        // O caminho deve ser igual ao da busca!
+        await remove(ref(db, `users/${user.uid}/treinos/${id}`));
+        
+        // Atualiza a lista localmente para o treino sumir da tela na hora
+        setWorkouts(prev => prev.filter(w => w.id !== id));
+        
         alert("Treino excluído!");
       } catch (error) {
         console.error("Erro ao excluir:", error);

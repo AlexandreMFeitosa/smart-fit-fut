@@ -4,6 +4,7 @@ import Menu from "./pages/Menu";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import  Login  from "./pages/Login";
+import DetalhesDoTreino from "./pages/DetalhesDoTreino";
 
 // Lazy loading das páginas
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -24,6 +25,9 @@ function App() {
             <Routes>
               {/* ROTA PÚBLICA */}
               <Route path="/login" element={<Login />} />
+
+              {/* ROTA PÚBLICA */}
+              <Route path="/detalhes" element={<DetalhesDoTreino/>} />
 
               {/* ROTAS PROTEGIDAS - O ProtectedRoute envolve o COMPONENTE, não o Route */}
               <Route path="/" element={
@@ -75,8 +79,8 @@ function App() {
               } />
             </Routes>
           </Suspense>
+          <Menu />
         </main>
-        <Menu />
       </BrowserRouter>
     </AuthProvider>
   );

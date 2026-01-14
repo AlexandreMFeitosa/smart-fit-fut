@@ -1,6 +1,6 @@
 import styles from "./WorkoutCard.module.css";
 import type { Workout } from "../types/workout";
-import { useNavigate } from "react-router-dom"; // Já estava importado, mas faltava usar
+import { useNavigate } from "react-router-dom";
 
 type Props = {
   workout: Workout;
@@ -12,22 +12,20 @@ type Props = {
 export default function WorkoutCard({
   workout,
   onStart,
-  
   onDelete,
 }: Props) {
-  const navigate = useNavigate(); // ✅ ADICIONE ESTA LINHA
+  const navigate = useNavigate();
 
   return (
     <div className={styles.card}>
-      {/* TOPO */}
       <div className={styles.header}>
         <h3 className={styles.title}>{workout.name}</h3>
         <span className={styles.count}>
-          {workout.exercises.length} exercícios
+          {/* ✅ CORREÇÃO: Adicionado '?' e '|| 0' para evitar erro de undefined */}
+          {workout.exercises?.length || 0} exercícios
         </span>
       </div>
 
-      {/* AÇÕES */}
       <div className={styles.actions}>
         <button className={styles.start} onClick={onStart}>
           Iniciar
@@ -35,7 +33,6 @@ export default function WorkoutCard({
 
         <button
           className={styles.editButton}
-          // ✅ Agora o navigate vai funcionar porque foi inicializado acima
           onClick={() => navigate(`/edit-workout/${workout.id}`)}
         >
           Editar
