@@ -1,138 +1,240 @@
 .container {
-  max-width: 420px;
+  max-width: 450px; /* Reduzido de 500px para 350px para ficar mais compacto */
   margin: 0 auto;
-  padding: 16px;
+  padding: 15px;
 }
 
 .title {
   text-align: center;
-  margin-bottom: 12px;
-  font-size: 1.4rem;
+  font-size: 1.2rem; /* Fonte menor */
+  margin-bottom: 15px;
+  color: #1e293b;
 }
 
 .calendarHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
-.calendarHeader button {
+.monthLabel {
+  font-weight: 700;
+  text-transform: capitalize;
+  font-size: 0.95rem; /* Fonte menor */
+}
+
+.navBtn {
   background: none;
   border: none;
-  font-size: 1.6rem;
-  color: #22a35a;
+  font-size: 1.5rem;
+  color: #22c55e;
   cursor: pointer;
+  padding: 0 10px;
 }
 
 .weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   text-align: center;
-  font-size: 0.75rem;
-  color: #22a35a;
-  margin-bottom: 6px;
+  font-weight: 600;
+  color: #64748b; /* Cor mais discreta para os dias */
+  font-size: 0.75rem; /* Dias da semana bem pequenos */
+  margin-bottom: 8px;
 }
 
-.calendar {
+.calendarGrid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+  gap: 5px; /* Espaço menor entre as bolinhas */
 }
 
 .day {
-  height: 36px;
+  aspect-ratio: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
   cursor: pointer;
+  border-radius: 50%;
+  font-size: 0.8rem; /* Números menores */
+  transition: 0.2s;
+  color: #334155;
+}
+
+.day:hover {
+  background-color: #f0fdf4;
 }
 
 .hasWorkout {
-  background: #22a35a;
-  color: white;
-  border-radius: 18px;
+  background-color: #22c55e !important;
+  color: white !important;
+  font-weight: bold;
 }
 
 .active {
-  outline: 2px solid #1b8a4a;
+  outline: 2px solid #22c55e;
+  outline-offset: 1px;
 }
 
+.emptyCell {
+  aspect-ratio: 1;
+}
+
+/* Seção de Detalhes mais discreta */
 .details {
   margin-top: 20px;
+  padding: 12px;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #f1f5f9;
+}
+
+.detailsTitle {
+  font-size: 0.85rem;
+  margin-bottom: 10px;
+  color: #64748b;
+  text-align: center;
 }
 
 .card {
-  background: #f8f9fa;
-  padding: 10px;
-  border-radius: 10px;
-  margin-bottom: 8px;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #f1f5f9;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
 }
 
-.actions button {
-  margin-left: 6px;
+/* Container de Detalhes do Dia Selecionado */
+.details {
+  margin-top: 20px;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
 }
 
-.deleteButton {
-  background: #ef4444;
-  color: white;
+.detailsTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 15px;
+  text-align: center;
+  display: block;
 }
 
-.editor {
-  margin-top: 12px;
+/* Lista de Treinos Concluídos */
+.card {
   display: flex;
-  gap: 6px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #f8fafc;
+  border-radius: 12px;
+  margin-bottom: 10px;
 }
 
-/* ===== SELECT MODERNO ===== */
-
-.selectWrapper {
-  position: relative;
-  width: 100%;
+.card strong {
+  color: #059669; /* Verde Alpha Fit */
+  font-size: 0.9rem;
 }
 
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Botões de Editar e Excluir */
+.actions button {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid #e2e8f0;
+  background: white;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.actions button:first-child { color: #2563eb; } /* Azul para editar */
+.actions button.deleteButton { 
+  color: #e11d48; 
+  background-color: #fff1f2;
+  border-color: #ffe4e6;
+}
+
+/* Formulário de Adicionar/Editar Treino */
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px dashed #e2e8f0;
+}
+
+/* Seletor Customizado Estilo Mobile */
 .selectButton {
   width: 100%;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  padding: 14px;
   border-radius: 12px;
-  padding: 12px 14px;
-  font-size: 14px;
+  border: 2px solid #f1f5f9;
+  background-color: #f8fafc;
+  color: #334155;
   font-weight: 600;
-  color: #111827;
+  font-size: 0.9rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.04);
+  transition: 0.2s;
 }
 
-.selectButton span {
-  font-size: 12px;
-  opacity: 0.6;
+.selectButton:focus {
+  border-color: #22c55e;
+  background-color: #fff;
 }
 
 .selectList {
-  position: absolute;
-  top: calc(100% + 6px);
-  width: 100%;
-  background: #ffffff;
-  border-radius: 14px;
-  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
-  z-index: 20;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  margin-top: 5px;
   overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .selectItem {
-  padding: 12px 14px;
-  font-size: 14px;
+  padding: 12px 16px;
+  font-size: 0.9rem;
+  color: #475569;
+  border-bottom: 1px solid #f1f5f9;
   cursor: pointer;
-  transition: background 0.2s;
 }
 
 .selectItem:hover {
-  background: #f1f5f9;
+  background-color: #f0fdf4;
+  color: #16a34a;
+}
+
+/* Botão Salvar (O principal do Mobile) */
+.saveButton {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: white;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+  transition: transform 0.2s, background 0.2s;
+}
+
+.saveButton:active {
+  transform: scale(0.98);
 }

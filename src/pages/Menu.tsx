@@ -3,7 +3,7 @@ import styles from "./Menu.module.css";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function Menu() {
-  const { logout, user } = useAuth();
+  const { user } = useAuth();
 
   // Se não houver usuário logado, o menu não renderiza nada
   if (!user) return null;
@@ -25,22 +25,19 @@ export default function Menu() {
       </NavLink>
 
       <NavLink
-        to="/historico"
+        to="/dieta"
         className={({ isActive }) => (isActive ? styles.active : styles.link)}
       >
-        Histórico
+        Dieta
       </NavLink>
 
       <NavLink
-        to="/evolucao"
+        to="/config"
         className={({ isActive }) => (isActive ? styles.active : styles.link)}
       >
-        Evolução
+        Ajustes
       </NavLink>
-
-      <button onClick={logout} className={styles.logoutButton}>
-        Sair
-      </button>
+      
     </nav>
   );
 }

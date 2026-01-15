@@ -7,7 +7,6 @@ import styles from "./WorkoutExecution.module.css";
 
 import { useAuth } from "../contexts/AuthContext";
 
-
 export function WorkoutExecution() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -28,31 +27,31 @@ export function WorkoutExecution() {
 
   // 1. Busca inicial do treino
   // 1. Busca inicial do treino (AJUSTADO PARA PASTA DO USUÁRIO)
-useEffect(() => {
-  async function fetchWorkout() {
-    if (!user || !id) return; // Garante que temos o ID e o Usuário
+  useEffect(() => {
+    async function fetchWorkout() {
+      if (!user || !id) return; // Garante que temos o ID e o Usuário
 
-    try {
-      // Agora buscamos na subpasta do usuário logado
-      const workoutRef = ref(db, `users/${user.uid}/treinos/${id}`);
-      const snapshot = await get(workoutRef);
-      
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        setWorkout(data);
+      try {
+        // Agora buscamos na subpasta do usuário logado
+        const workoutRef = ref(db, `users/${user.uid}/treinos/${id}`);
+        const snapshot = await get(workoutRef);
 
-        const initialWeights: { [key: string]: number } = {};
-        data.exercises.forEach((ex: Exercise) => {
-          initialWeights[ex.id] = ex.weight;
-        });
-        setCurrentWeights(initialWeights);
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          setWorkout(data);
+
+          const initialWeights: { [key: string]: number } = {};
+          data.exercises.forEach((ex: Exercise) => {
+            initialWeights[ex.id] = ex.weight;
+          });
+          setCurrentWeights(initialWeights);
+        }
+      } catch (err) {
+        console.error("Erro ao buscar treino:", err);
       }
-    } catch (err) {
-      console.error("Erro ao buscar treino:", err);
     }
-  }
-  fetchWorkout();
-}, [id, user]); // Adicione 'user' como dependência
+    fetchWorkout();
+  }, [id, user]); // Adicione 'user' como dependência
 
   // 2. RECUPERAÇÃO: LocalStorage
   useEffect(() => {
@@ -79,14 +78,28 @@ useEffect(() => {
     }
   }, [completedSets, currentWeights, id]);
 
-  // Lógica do Timer
+  // Lógica do Timer com Beeps Progressivos
   useEffect(() => {
     let interval: any;
     if (isActive && timer !== null && timer > 0) {
-      interval = setInterval(
-        () => setTimer((t) => (t !== null ? t - 1 : null)),
-        1000
-      );
+      interval = setInterval(() => {
+        setTimer((t) => {
+          if (t === null) return null;
+
+          const nextTime = t - 1;
+
+          // Tocar bip curto nos segundos 5, 4, 3, 2
+          if (nextTime <= 5 && nextTime > 0) {
+            const shortBeep = new Audio(
+              "https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
+            );
+            shortBeep.volume = 0.5; // Volume um pouco mais baixo para os bips de aviso
+            shortBeep.play().catch(() => {});
+          }
+
+          return nextTime;
+        });
+      }, 1000);
     } else if (timer === 0) {
       handleTimerEnd();
     }
@@ -97,10 +110,12 @@ useEffect(() => {
     setIsActive(false);
     setTimer(null);
     setActiveExerciseId(null);
-    const beep = new Audio(
-      "https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
+
+    // Toque final (pode ser um som um pouco mais longo ou mais alto)
+    const finalBeep = new Audio(
+      "https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg"
     );
-    beep.play().catch(() => {});
+    finalBeep.play().catch(() => {});
   }
 
   const handleWeightChange = (exerciseId: string, value: string) => {
@@ -257,7 +272,7 @@ useEffect(() => {
                   <button
                     className={styles.evolutionLink}
                     type="button"
-                    onClick={() => navigate('/detalhes')}
+                    onClick={() => navigate("/detalhes")}
                   >
                     📈 Detalhes
                   </button>

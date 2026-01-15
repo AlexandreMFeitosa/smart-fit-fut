@@ -6,7 +6,7 @@ import styles from "./Dashboard.module.css";
 import { useAuth } from "../contexts/AuthContext";
 
 export function Dashboard() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const [progress, setProgress] = useState(0);
@@ -23,11 +23,15 @@ export function Dashboard() {
       if (!user) return;
 
       // 4. Mudar o caminho para a "pasta" exclusiva do usuário
-      const userLogsRef = ref(db, `users/${user.uid}/logs`); 
+      const userLogsRef = ref(db, `users/${user.uid}/logs`);
       const snapshot = await get(userLogsRef);
 
       if (!user) {
-        return <div style={{ padding: "20px", textAlign: "center" }}>Carregando perfil...</div>;
+        return (
+          <div style={{ padding: "20px", textAlign: "center" }}>
+            Carregando perfil...
+          </div>
+        );
       }
 
       if (!snapshot.exists()) {
@@ -74,13 +78,22 @@ export function Dashboard() {
     <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.brandContainer}>
-          <img src="/icon-512.png" className={styles.logo} alt="Alpha Fit Logo" />
+          <img
+            src="/icon-512.png"
+            className={styles.logo}
+            alt="Alpha Fit Logo"
+          />
           <div className={styles.brandText}>
             <h1 className={styles.title}>Alpha Fit Training</h1>
-            {/* 6. Dica de portfólio: Usar o nome do usuário vindo do Google */}
-            <p className={styles.subtitleText}>Foco total, {user?.displayName?.split(' ')[0]}! 💪</p>
+            <p className={styles.subtitleText}>
+              Foco total, {user?.displayName?.split(" ")[0]}! 💪
+            </p>
           </div>
         </div>
+
+        <button onClick={logout} className={styles.logoutHeaderBtn}>
+          Sair
+        </button>
       </header>
 
       {/* CARD PROGRESSO MENSAL */}
@@ -142,6 +155,19 @@ export function Dashboard() {
           onClick={() => navigate("/historico")}
         >
           📅 <span>Histórico</span>
+        </button>
+
+        <button
+          className={styles.actionButton}
+          onClick={() => navigate("/dieta")}
+        >
+          🍎 <span>Minha Dieta</span>
+        </button>
+        <button
+          className={styles.actionButton}
+          onClick={() => navigate("/evolucao")}
+        >
+          📈 <span>Evolução</span>
         </button>
       </section>
     </div>

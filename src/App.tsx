@@ -5,6 +5,8 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import  Login  from "./pages/Login";
 import DetalhesDoTreino from "./pages/DetalhesDoTreino";
+import Dieta from "./pages/Dieta";
+import Configuracao from "./pages/Configuracao";
 
 // Lazy loading das páginas
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -57,6 +59,18 @@ function App() {
               <Route path="/historico" element={
                 <ProtectedRoute>
                   <WorkoutHistory />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/dieta" element={
+                <ProtectedRoute>
+                  <Dieta />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/config" element={
+                <ProtectedRoute>
+                  <Configuracao />
                 </ProtectedRoute>
               } />
 
