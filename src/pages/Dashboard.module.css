@@ -9,18 +9,44 @@
   margin: 0 auto;
 }
 
+.logoutHeaderBtn {
+  background-color: #fff1f2; /* Um fundo vermelho bem suave */
+  color: #e11d48;            /* Texto em tom de vermelho/rosa forte */
+  border: 1px solid #ffe4e6;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.logoutHeaderBtn:hover {
+  background-color: #ffe4e6;
+  transform: translateY(-1px);
+}
+
+.logoutHeaderBtn:active {
+  transform: translateY(0);
+}
+
 
 /* ===== HEADER ===== */
 
 .header {
-  padding: 20px;
-  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between; /* Empurra o logo/texto para um lado e o botão para o outro */
+  align-items: center;           /* Centraliza verticalmente todos os itens */
+  padding: 20px 15px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .brandContainer {
   display: flex;
-  align-items: center; /* Alinha verticalmente ao centro */
-  gap: 15px; /* Espaço entre a imagem e o texto */
+  align-items: center;
+  gap: 12px; /* Espaço entre a logo e o texto */
 }
 
 .logo {
