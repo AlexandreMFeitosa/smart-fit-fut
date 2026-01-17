@@ -7,7 +7,8 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
-  type User // Correção para o erro da image_80e2c1.png
+  updateProfile, // <-- Importado para atualizar o nome
+  type User 
 } from "firebase/auth";
 import { auth } from "../firebase";
 
@@ -16,7 +17,8 @@ interface AuthContextType {
   loading: boolean;
   loginWithGoogle: () => Promise<void>;
   loginWithEmail: (email: string, password: string) => Promise<void>;
-  registerWithEmail: (email: string, password: string) => Promise<void>;
+  // Adicionado o parâmetro 'name' aqui
+  registerWithEmail: (email: string, password: string, name: string) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -54,11 +56,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const registerWithEmail = async (email: string, password: string) => {
+  // FUNÇÃO ATUALIZADA
+  const registerWithEmail = async (email: string, password: string, name: string) => {
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      // 1. Cria a conta do usuário
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // 2. Atualiza o perfil imediatamente com o nome fornecido
+      if (userCredential.user) {
+        await updateProfile(userCredential.user, {
+          displayName: name,
+        });
+        
+        // Força a atualização do estado local para refletir o nome sem precisar dar F5
+        setUser({ ...userCredential.user, displayName: name });
+      }
     } catch (error) {
-      console.error("Erro no registo:", error);
+      console.error("Erro no registro:", error);
       throw error;
     }
   };

@@ -15,11 +15,13 @@ export function AddWorkout() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [exerciseName, setExerciseName] = useState("");
   const [substitute, setSubstitute] = useState("");
-  const [series, setSeries] = useState(3);
-  const [reps, setReps] = useState(12);
   const [isSaving, setIsSaving] = useState(false);
-  const [weight, setWeight] = useState(0);
-  const [rest, setRest] = useState(60);
+
+  // Alterado para string vazia para evitar o "0" automático nos inputs
+  const [series, setSeries] = useState<string | number>("");
+  const [reps, setReps] = useState<string | number>("");
+  const [weight, setWeight] = useState<string | number>("");
+  const [rest, setRest] = useState<string | number>(60);
 
   function handleAddExercise() {
     if (!exerciseName.trim()) return;
@@ -28,16 +30,21 @@ export function AddWorkout() {
       id: uuid(),
       name: exerciseName,
       substitute,
-      series: Number(series),
-      reps: Number(reps),
-      weight: Number(weight),
-      rest: Number(rest),
+      // Convertemos para Number apenas na hora de salvar na lista
+      series: Number(series) || 0,
+      reps: Number(reps) || 0,
+      weight: Number(weight) || 0,
+      rest: Number(rest) || 0,
     };
 
     setExercises((prev) => [...prev, newExercise]);
+    
+    // Limpa os campos para o próximo exercício
     setExerciseName("");
     setSubstitute("");
-    setWeight(0);
+    setSeries("");
+    setReps("");
+    setWeight("");
     setRest(60);
   }
 
@@ -60,10 +67,7 @@ export function AddWorkout() {
         createdAt: new Date().toISOString(),
       };
 
-      // 3. Referência para a pasta PRIVADA do usuário
       const userWorkoutsRef = ref(db, `users/${user.uid}/treinos`);
-
-      // 4. Salvar no Firebase
       await push(userWorkoutsRef, workoutData);
 
       navigate("/treinos");
@@ -113,32 +117,40 @@ export function AddWorkout() {
               <label>Séries</label>
               <input
                 type="number"
+                placeholder="0"
                 value={series}
-                onChange={(e) => setSeries(Number(e.target.value))}
+                onFocus={(e) => e.target.select()} // Seleciona tudo ao clicar
+                onChange={(e) => setSeries(e.target.value)}
               />
             </div>
             <div className={styles.inputGroup}>
               <label>Reps</label>
               <input
                 type="number"
+                placeholder="0"
                 value={reps}
-                onChange={(e) => setReps(Number(e.target.value))}
+                onFocus={(e) => e.target.select()}
+                onChange={(e) => setReps(e.target.value)}
               />
             </div>
             <div className={styles.inputGroup}>
               <label>Peso (kg)</label>
               <input
                 type="number"
+                placeholder="0"
                 value={weight}
-                onChange={(e) => setWeight(Number(e.target.value))}
+                onFocus={(e) => e.target.select()}
+                onChange={(e) => setWeight(e.target.value)}
               />
             </div>
             <div className={styles.inputGroup}>
               <label>Descanso (s)</label>
               <input
                 type="number"
+                placeholder="60"
                 value={rest}
-                onChange={(e) => setRest(Number(e.target.value))}
+                onFocus={(e) => e.target.select()}
+                onChange={(e) => setRest(e.target.value)}
               />
             </div>
           </div>
