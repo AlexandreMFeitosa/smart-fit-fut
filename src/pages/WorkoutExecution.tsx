@@ -265,7 +265,7 @@ export function WorkoutExecution() {
                     type="button"
                     onClick={() => handleSeeEvolution(ex.id)}
                   >
-                    📈 Histórico
+                    📈 Evolução do treino
                   </button>
 
                   {/* ATALHO PARA VER DETALHES */}
@@ -274,7 +274,7 @@ export function WorkoutExecution() {
                     type="button"
                     onClick={() => navigate("/detalhes")}
                   >
-                    📈 Detalhes
+                    📈 Detalhes do treino
                   </button>
                 </div>
 

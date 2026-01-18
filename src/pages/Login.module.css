@@ -1,149 +1,203 @@
-.container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    background-color: #f8fafc;
-    padding: 20px;
-    text-align: center;
-  }
-  
-  .card {
-    background: white;
-    padding: 2rem;
-    border-radius: 16px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 400px;
-  }
-  
-  .title {
-    color: #1e293b;
-    margin-bottom: 0.5rem;
-  }
-  
-  .subtitle {
-    color: #64748b;
-    margin-bottom: 2rem;
-  }
-  
-  .googleBtn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    background: white;
-    color: #1e293b;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  
-  .googleBtn:hover {
-    background: #f1f5f9;
-  }
-  
-  .googleBtn img {
-    width: 20px;
-    height: 20px;
-  }
+.pageWrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8fafc;
+  padding: 20px;
+}
 
-  .pageWrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background-color: #f8fafc;
-  }
-  
-  .card {
-    background: white;
-    padding: 2.5rem;
-    border-radius: 1.5rem;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-    width: 100%;
-    max-width: 400px;
-    text-align: center;
-  }
-  
-  .inputGroup {
-    text-align: left;
-    margin-bottom: 1rem;
-  }
-  
-  .inputGroup label {
-    display: block;
-    font-size: 0.875rem;
-    font-weight: 600;
-    margin-bottom: 0.4rem;
-    color: #475569;
-  }
-  
-  .inputGroup input {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 0.75rem;
-    outline: none;
-  }
-  
-  .btnPrimary {
-    width: 100%;
-    padding: 0.8rem;
-    background-color: #10b981; /* Verde do seu app */
-    color: white;
-    border: none;
-    border-radius: 999px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 1rem;
-  }
-  
-  .divider {
-    margin: 1.5rem 0;
-    position: relative;
-    border-bottom: 1px solid #e2e8f0;
-  }
-  
-  .divider span {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 0 10px;
-    color: #94a3b8;
-    font-size: 0.875rem;
-  }
-  
-  .btnGoogle {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 0.8rem;
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 999px;
-    cursor: pointer;
-    font-weight: 500;
-  }
-  
-  .errorMessage {
-    color: #ef4444;
-    font-size: 0.875rem;
-    margin-bottom: 1rem;
-  }
-  
-  .footer span {
-    color: #10b981;
-    font-weight: 600;
-    cursor: pointer;
-  }
+.card {
+  background: #ffffff;
+  width: 100%;
+  max-width: 420px;
+  padding: 40px;
+  border-radius: 24px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
 
+.header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.header h1 {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: -1px;
+}
+
+.header p {
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.errorMessage {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  margin-bottom: 24px;
+  border: 1px solid #fee2e2;
+  text-align: center;
+  font-weight: 500;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inputGroup label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #334155;
+  padding-left: 4px;
+}
+
+.inputGroup input {
+  padding: 12px 16px;
+  border: 2px solid #f1f5f9;
+  border-radius: 12px;
+  outline: none;
+  font-size: 1rem;
+  background-color: #f8fafc;
+  transition: all 0.2s;
+}
+
+.inputGroup input:focus {
+  border-color: #10b981;
+  background-color: #fff;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+}
+
+.passwordWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.passwordWrapper input {
+  width: 100%;
+  padding-right: 50px;
+}
+
+.togglePassword {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 8px;
+  transition: color 0.2s;
+}
+
+.togglePassword:hover {
+  color: #10b981;
+}
+
+.helpText {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  padding-left: 4px;
+}
+
+.btnPrimary {
+  background-color: #10b981;
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: transform 0.1s, background 0.2s;
+}
+
+.btnPrimary:hover {
+  background-color: #059669;
+}
+
+.btnPrimary:active {
+  transform: scale(0.98);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 24px 0;
+}
+
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.divider span {
+  padding: 0 12px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #cbd5e1;
+}
+
+.btnGoogle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: white;
+  border: 2px solid #f1f5f9;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btnGoogle:hover {
+  background-color: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.btnGoogle img {
+  width: 20px;
+}
+
+.footer {
+  margin-top: 32px;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.toggleMode {
+  color: #10b981;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.toggleMode:hover {
+  text-decoration: underline;
+}
