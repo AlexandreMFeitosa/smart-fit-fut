@@ -66,11 +66,31 @@
 .btnAddExercise {
   width: 100%;
   padding: 12px;
-  background: var(--secondary); /* Azul para diferenciar da ação principal */
-  color: white;
-  font-weight: 600;
+  /* Fundo verde bem clarinho ou transparente para destacar o tracejado */
+  background-color: #f0fdf4; 
+  color: #22c55e;
+  /* Borda tracejada verde */
+  border: 2px dashed #22c55e;
   border-radius: 8px;
-  margin-top: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Efeito ao passar o mouse: Fica verde sólido com texto branco */
+.btnAddExercise:hover {
+  background-color: #22c55e;
+  color: white;
+  border-style: solid; /* Muda de dashed (tracejado) para sólido */
+}
+
+/* Feedback de clique (diminui levemente) */
+.btnAddExercise:active {
+  transform: scale(0.98);
 }
 
 .list {

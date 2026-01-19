@@ -70,3 +70,74 @@
   font-weight: 700;
   border-radius: var(--radius);
 }
+
+.btnAddExercise {
+  width: 100%;
+  padding: 12px;
+  background-color: #f0fdf4; /* Um verde bem clarinho */
+  color: #22c55e;
+  border: 2px dashed #22c55e;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 10px;
+}
+
+.btnAddExercise:hover {
+  background-color: #22c55e;
+  color: white;
+  border-style: solid;
+}
+
+.btnAddExercise:active {
+  transform: scale(0.98);
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  min-height: 100px; /* Evita que a lista suma se ficar vazia */
+}
+
+.exerciseItem {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background: white;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  border: 1px solid #e2e8f0;
+  /* Essencial para mobile não confundir arrasto com scroll */
+  touch-action: none; 
+}
+
+.dragging {
+  background-color: #f0fdf4 !important;
+  border-color: #22c55e !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+/* Símbolo de arrastar (☰) */
+.dragHandle {
+  margin-right: 15px;
+  color: #cbd5e1; /* Cor cinza suave */
+  font-size: 1.2rem;
+  
+  /* 🔑 Mãozinha aberta (indicando que pode pegar) */
+  cursor: grab; 
+  
+  /* Garante que o usuário não selecione o texto do ícone sem querer */
+  user-select: none;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+}
+
+/* 🔑 Mãozinha fechada enquanto está arrastando */
+.dragHandle:active {
+  cursor: grabbing;
+}

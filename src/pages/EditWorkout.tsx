@@ -5,7 +5,8 @@ import { db } from "../firebase";
 import { ref, get, update } from "firebase/database";
 import { v4 as uuid } from "uuid";
 import styles from "./EditWorkout.module.css";
-import { useAuth } from "../contexts/AuthContext"; // 1. Importar Auth
+import { useAuth } from "../contexts/AuthContext";
+import { DragDropContext, Droppable, Draggable, type DropResult } from "@hello-pangea/dnd";
 
 export function EditWorkout() {
   const { id } = useParams();
@@ -30,7 +31,7 @@ export function EditWorkout() {
       try {
         // 4. Caminho privado: users/UID/treinos/ID
         const snapshot = await get(ref(db, `users/${user.uid}/treinos/${id}`));
-        
+
         if (snapshot.exists()) {
           setWorkout({ id, ...snapshot.val() });
         } else {
@@ -48,12 +49,17 @@ export function EditWorkout() {
   }, [id, user, navigate]);
 
   function handleAddExercise() {
-    if (!exerciseName || !substitute || !workout) return;
+    // Agora só trava se o NOME estiver vazio.
+    // O "substitute" pode ser vazio agora.
+    if (!exerciseName.trim() || !workout) {
+      alert("Por favor, digite o nome do exercício.");
+      return;
+    }
 
     const newExercise: Exercise = {
       id: uuid(),
       name: exerciseName,
-      substitute,
+      substitute: substitute || "", // Se estiver vazio, salva como string vazia
       series,
       reps,
       weight,
@@ -65,6 +71,7 @@ export function EditWorkout() {
       exercises: [...(workout.exercises || []), newExercise],
     });
 
+    // Limpa os campos após adicionar
     setExerciseName("");
     setSubstitute("");
     setSeries(3);
@@ -81,6 +88,17 @@ export function EditWorkout() {
     });
   }
 
+  // Função para mover o exercício na lista
+  const onDragEnd = (result: DropResult) => {
+    if (!result.destination || !workout) return;
+
+    const items = Array.from(workout.exercises);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    setWorkout({ ...workout, exercises: items });
+  };
+
   async function handleUpdateWorkout() {
     // 5. Verificação de segurança antes de salvar
     if (!workout || !id || !user) return;
@@ -95,7 +113,12 @@ export function EditWorkout() {
     }
   }
 
-  if (loading) return <div className="app-container"><p>Carregando...</p></div>;
+  if (loading)
+    return (
+      <div className="app-container">
+        <p>Carregando...</p>
+      </div>
+    );
   if (!workout) return null;
 
   return (
@@ -123,19 +146,35 @@ export function EditWorkout() {
           <div className={styles.row}>
             <div className={styles.inputGroup}>
               <label>Séries</label>
-              <input type="number" value={series} onChange={(e) => setSeries(+e.target.value)} />
+              <input
+                type="number"
+                value={series}
+                onChange={(e) => setSeries(+e.target.value)}
+              />
             </div>
             <div className={styles.inputGroup}>
               <label>Reps</label>
-              <input type="number" value={reps} onChange={(e) => setReps(+e.target.value)} />
+              <input
+                type="number"
+                value={reps}
+                onChange={(e) => setReps(+e.target.value)}
+              />
             </div>
             <div className={styles.inputGroup}>
               <label>Peso</label>
-              <input type="number" value={weight} onChange={(e) => setWeight(+e.target.value)} />
+              <input
+                type="number"
+                value={weight}
+                onChange={(e) => setWeight(+e.target.value)}
+              />
             </div>
             <div className={styles.inputGroup}>
               <label>Descanso</label>
-              <input type="number" value={rest} onChange={(e) => setRest(+e.target.value)} />
+              <input
+                type="number"
+                value={rest}
+                onChange={(e) => setRest(+e.target.value)}
+              />
             </div>
           </div>
 
@@ -145,20 +184,45 @@ export function EditWorkout() {
         </div>
 
         <div className={styles.card}>
-          <h3>Exercícios do Treino</h3>
-          <ul className={styles.list}>
-            {workout.exercises?.map((ex) => (
-              <li key={ex.id} className={styles.exerciseItem}>
-                <div>
-                  <strong>{ex.name}</strong>
-                  <p>{ex.series}x{ex.reps} - {ex.weight}kg</p>
-                </div>
-                <button className={styles.btnRemove} onClick={() => handleRemoveExercise(ex.id)}>
-                  ✕
-                </button>
-              </li>
-            ))}
-          </ul>
+          <h3>Exercícios (Arraste para reordenar)</h3>
+          
+          <DragDropContext onDragEnd={onDragEnd}>
+            <Droppable droppableId="exercises">
+              {(provided) => (
+                <ul 
+                  className={styles.list} 
+                  {...provided.droppableProps} 
+                  ref={provided.innerRef}
+                >
+                  {workout.exercises?.map((ex, index) => (
+                    <Draggable key={ex.id} draggableId={ex.id} index={index}>
+                      {(provided, snapshot) => (
+                        <li
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          className={`${styles.exerciseItem} ${snapshot.isDragging ? styles.dragging : ""}`}
+                        >
+                          <div className={styles.dragHandle}>☰</div>
+                          <div className={styles.exerciseInfo}>
+                            <strong>{ex.name}</strong>
+                            <p>{ex.series}x{ex.reps} - {ex.weight}kg</p>
+                          </div>
+                          <button 
+                            className={styles.btnRemove} 
+                            onClick={() => handleRemoveExercise(ex.id)}
+                          >
+                            ✕
+                          </button>
+                        </li>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </ul>
+              )}
+            </Droppable>
+          </DragDropContext>
         </div>
 
         <button className={styles.btnSave} onClick={handleUpdateWorkout}>
