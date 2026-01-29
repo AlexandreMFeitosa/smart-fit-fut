@@ -25,6 +25,12 @@ export function WorkoutExecution() {
 
   const { user } = useAuth();
 
+  useEffect(() => {
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+  }, []);
+
   // 1. Busca inicial do treino
   // 1. Busca inicial do treino (AJUSTADO PARA PASTA DO USUÁRIO)
   useEffect(() => {
@@ -78,44 +84,97 @@ export function WorkoutExecution() {
     }
   }, [completedSets, currentWeights, id]);
 
-  // Lógica do Timer com Beeps Progressivos
+  // 1. Crie um novo estado para armazenar o timestamp final
+  const [endTime, setEndTime] = useState<number | null>(null);
+
+  // 2. Ajuste o useEffect do Timer
   useEffect(() => {
     let interval: any;
-    if (isActive && timer !== null && timer > 0) {
+
+    if (isActive && endTime !== null) {
       interval = setInterval(() => {
-        setTimer((t) => {
-          if (t === null) return null;
+        const now = Date.now();
+        const remaining = Math.max(0, Math.ceil((endTime - now) / 1000));
 
-          const nextTime = t - 1;
+        if (remaining !== timer) {
+          setTimer(remaining);
 
-          // Tocar bip curto nos segundos 5, 4, 3, 2
-          if (nextTime <= 5 && nextTime > 0) {
+          // Bips curtos de aviso (5s finais)
+          if (remaining <= 5 && remaining > 0) {
             const shortBeep = new Audio(
               "https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
             );
-            shortBeep.volume = 0.5; // Volume um pouco mais baixo para os bips de aviso
+            shortBeep.volume = 0.2; // Volume baixo costuma "misturar" melhor que pausar
             shortBeep.play().catch(() => {});
           }
+        }
 
-          return nextTime;
-        });
-      }, 1000);
-    } else if (timer === 0) {
-      handleTimerEnd();
+        if (remaining <= 0) {
+          handleTimerEnd(); // Chamando a função correta
+          setEndTime(null);
+          clearInterval(interval);
+        }
+      }, 500);
     }
     return () => clearInterval(interval);
-  }, [isActive, timer]);
+  }, [isActive, endTime, timer]);
 
+  // FUNÇÃO CORRIGIDA (Remova aquela que estava fora do componente)
   function handleTimerEnd() {
     setIsActive(false);
     setTimer(null);
     setActiveExerciseId(null);
 
-    // Toque final (pode ser um som um pouco mais longo ou mais alto)
-    const finalBeep = new Audio(
-      "https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg"
-    );
-    finalBeep.play().catch(() => {});
+    // 1. VERIFICAÇÃO: O app está aparecendo na tela agora?
+    const isAppVisible = document.visibilityState === "visible";
+
+    if (isAppVisible) {
+      // Se o usuário está com o app aberto, toca o som normal
+      const finalBeep = new Audio(
+        "https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg"
+      );
+      finalBeep.volume = 0.5;
+      finalBeep.play().catch(() => {});
+    } else {
+      // Se o usuário está em OUTRO APP (ouvindo música), NÃO tocamos som para não pausar o Spotify
+      // Apenas vibramos e mandamos a notificação
+      if ("vibrate" in navigator) {
+        navigator.vibrate([500, 200, 500]); // Duas vibrações longas
+      }
+    }
+
+    // 2. Notificação Visual (Sempre envia, pois aparece por cima de qualquer app)
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification("Alpha Fit Trainning", {
+        body: "Vamos lá meu atleta, o descanso acabou! 💪",
+        icon: "/logo192.png",
+        silent: isAppVisible ? false : true, // Se o app estiver aberto, o sistema pode apitar. Se não, fica em silêncio para não parar a música.
+      });
+    }
+  }
+
+  function toggleSet(exerciseId: string, setIndex: number) {
+    const currentCompleted = completedSets[exerciseId] || 0;
+
+    if (setIndex + 1 === currentCompleted) {
+      setCompletedSets({
+        ...completedSets,
+        [exerciseId]: currentCompleted - 1,
+      });
+    } else if (setIndex === currentCompleted) {
+      setCompletedSets({
+        ...completedSets,
+        [exerciseId]: currentCompleted + 1,
+      });
+
+      const ex = workout?.exercises.find((e) => e.id === exerciseId);
+      const restTime = ex?.rest || 60;
+
+      setTimer(restTime);
+      setEndTime(Date.now() + restTime * 1000);
+      setIsActive(true);
+      setActiveExerciseId(exerciseId);
+    }
   }
 
   const handleWeightChange = (exerciseId: string, value: string) => {
@@ -135,25 +194,6 @@ export function WorkoutExecution() {
       [exerciseId]: isCurrentlyFull ? 0 : totalSeries,
     }));
   };
-
-  function toggleSet(exerciseId: string, setIndex: number) {
-    const currentCompleted = completedSets[exerciseId] || 0;
-    if (setIndex + 1 === currentCompleted) {
-      setCompletedSets({
-        ...completedSets,
-        [exerciseId]: currentCompleted - 1,
-      });
-    } else if (setIndex === currentCompleted) {
-      setCompletedSets({
-        ...completedSets,
-        [exerciseId]: currentCompleted + 1,
-      });
-      const ex = workout?.exercises.find((e) => e.id === exerciseId);
-      setTimer(ex?.rest || 60);
-      setIsActive(true);
-      setActiveExerciseId(exerciseId);
-    }
-  }
 
   const calculateProgress = () => {
     if (!workout) return 0;
