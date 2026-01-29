@@ -124,56 +124,81 @@ export function WorkoutExecution() {
     setIsActive(false);
     setTimer(null);
     setActiveExerciseId(null);
-
-    // 1. VERIFICAÇÃO: O app está aparecendo na tela agora?
+    setEndTime(null); // Garante que o timestamp seja limpo
+  
     const isAppVisible = document.visibilityState === "visible";
-
+  
+    // 1. CORREÇÃO DO SOM (Bipe curto de verdade)
+    // Use um som de 1 ou 2 segundos no máximo. 
+    // Se usar o 'long', vamos forçar ele parar após 2 segundos.
+    const finalBeep = new Audio("https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg");
+    finalBeep.volume = 0.5;
+    
     if (isAppVisible) {
-      // Se o usuário está com o app aberto, toca o som normal
-      const finalBeep = new Audio(
-        "https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg"
-      );
-      finalBeep.volume = 0.5;
       finalBeep.play().catch(() => {});
-    } else {
-      // Se o usuário está em OUTRO APP (ouvindo música), NÃO tocamos som para não pausar o Spotify
-      // Apenas vibramos e mandamos a notificação
-      if ("vibrate" in navigator) {
-        navigator.vibrate([500, 200, 500]); // Duas vibrações longas
-      }
+      // Força o som a parar depois de 2 segundos para não tocar os 19s
+      setTimeout(() => {
+        finalBeep.pause();
+        finalBeep.currentTime = 0;
+      }, 2000);
     }
-
-    // 2. Notificação Visual (Sempre envia, pois aparece por cima de qualquer app)
+  
+    // 2. VIBRAÇÃO (Aumentar a intensidade para garantir que o usuário sinta)
+    if ("vibrate" in navigator) {
+      // Padrão: Vibra 500ms, pausa 200, vibra 500, pausa 200, vibra 800
+      navigator.vibrate([500, 200, 500, 200, 800]);
+    }
+  
+    // 3. NOTIFICAÇÃO
     if ("Notification" in window && Notification.permission === "granted") {
+      // Remova o "const notification =" e use apenas o "new" com o "as any"
       new Notification("Alpha Fit Trainning", {
         body: "Vamos lá meu atleta, o descanso acabou! 💪",
         icon: "/logo192.png",
-        silent: isAppVisible ? false : true, // Se o app estiver aberto, o sistema pode apitar. Se não, fica em silêncio para não parar a música.
-      });
+        tag: "rest-timer",
+        renotify: true,
+        silent: isAppVisible ? false : true,
+      } as any);
     }
   }
 
   function toggleSet(exerciseId: string, setIndex: number) {
     const currentCompleted = completedSets[exerciseId] || 0;
-
-    if (setIndex + 1 === currentCompleted) {
-      setCompletedSets({
-        ...completedSets,
-        [exerciseId]: currentCompleted - 1,
-      });
-    } else if (setIndex === currentCompleted) {
-      setCompletedSets({
-        ...completedSets,
-        [exerciseId]: currentCompleted + 1,
-      });
-
+  
+    // Se o usuário clicar na série correta (a próxima da lista)
+    if (setIndex === currentCompleted) {
+      // 1. Atualiza o progresso visual (Marca o número como feito)
+      const newCompleted = currentCompleted + 1;
+      setCompletedSets(prev => ({
+        ...prev,
+        [exerciseId]: newCompleted
+      }));
+  
+      // 2. Inicia o Timer
       const ex = workout?.exercises.find((e) => e.id === exerciseId);
-      const restTime = ex?.rest || 60;
-
-      setTimer(restTime);
-      setEndTime(Date.now() + restTime * 1000);
-      setIsActive(true);
-      setActiveExerciseId(exerciseId);
+      if (ex) {
+        const restTime = ex.rest || 60;
+  
+        setActiveExerciseId(exerciseId); // 🔥 Isso faz o relógio aparecer no card
+        setTimer(restTime);
+        setEndTime(Date.now() + restTime * 1000); // Timestamp para precisão
+        setIsActive(true);
+  
+        // 3. Avisa o Service Worker para o segundo plano
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({
+            type: 'START_TIMER',
+            seconds: restTime
+          });
+        }
+      }
+    } 
+    // Opcional: Desmarcar a série se clicar na última feita
+    else if (setIndex === currentCompleted - 1) {
+      setCompletedSets(prev => ({
+        ...prev,
+        [exerciseId]: currentCompleted - 1
+      }));
     }
   }
 
