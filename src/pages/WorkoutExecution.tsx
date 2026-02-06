@@ -4,93 +4,95 @@ import { db } from "../firebase";
 import { ref, get, push, update } from "firebase/database";
 import type { Workout, Exercise } from "../types/workout";
 import styles from "./WorkoutExecution.module.css";
-
 import { useAuth } from "../contexts/AuthContext";
 
 export function WorkoutExecution() {
   const { id } = useParams();
   const navigate = useNavigate();
-
-  const [workout, setWorkout] = useState<Workout | null>(null);
-  const [completedSets, setCompletedSets] = useState<{
-    [exerciseId: string]: number;
-  }>({});
-  const [currentWeights, setCurrentWeights] = useState<{
-    [exerciseId: string]: number;
-  }>({});
-
-  const [timer, setTimer] = useState<number | null>(null);
-  const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null);
-  const [isActive, setIsActive] = useState(false);
-
   const { user } = useAuth();
 
+  // --- Estados do Treino ---
+  const [workout, setWorkout] = useState<Workout | null>(null);
+  const [completedSets, setCompletedSets] = useState<{ [exerciseId: string]: number }>({});
+  const [currentWeights, setCurrentWeights] = useState<{ [exerciseId: string]: number }>({});
+  
+  // --- Estados dos Timers ---
+  const [timer, setTimer] = useState<number | null>(null); // Timer de descanso
+  const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null);
+  const [isActive, setIsActive] = useState(false);
+  const [endTime, setEndTime] = useState<number | null>(null);
+
+  // --- Estados do Cronômetro Global ---
+  const [workoutDuration, setWorkoutDuration] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  // 1. Permissão de Notificação
   useEffect(() => {
     if ("Notification" in window && Notification.permission === "default") {
       Notification.requestPermission();
     }
   }, []);
 
-  // 1. Busca inicial do treino
-  // 1. Busca inicial do treino (AJUSTADO PARA PASTA DO USUÁRIO)
+  // 2. Busca inicial do Treino
   useEffect(() => {
     async function fetchWorkout() {
-      if (!user || !id) return; // Garante que temos o ID e o Usuário
-
+      if (!user || !id) return;
       try {
-        // Agora buscamos na subpasta do usuário logado
         const workoutRef = ref(db, `users/${user.uid}/treinos/${id}`);
         const snapshot = await get(workoutRef);
-
         if (snapshot.exists()) {
           const data = snapshot.val();
           setWorkout(data);
-
+          // Inicializa pesos se não houver no progresso salvo
           const initialWeights: { [key: string]: number } = {};
           data.exercises.forEach((ex: Exercise) => {
             initialWeights[ex.id] = ex.weight;
           });
-          setCurrentWeights(initialWeights);
+          setCurrentWeights((prev) => (Object.keys(prev).length === 0 ? initialWeights : prev));
         }
       } catch (err) {
         console.error("Erro ao buscar treino:", err);
       }
     }
     fetchWorkout();
-  }, [id, user]); // Adicione 'user' como dependência
+  }, [id, user]);
 
-  // 2. RECUPERAÇÃO: LocalStorage
+  // 3. Recuperação de Progresso Local (LocalStorage)
   useEffect(() => {
     const savedSets = localStorage.getItem(`workout_progress_${id}`);
     const savedWeights = localStorage.getItem(`workout_weights_${id}`);
+    const savedDuration = localStorage.getItem(`workout_duration_${id}`);
 
     if (savedSets) setCompletedSets(JSON.parse(savedSets));
     if (savedWeights) setCurrentWeights(JSON.parse(savedWeights));
+    if (savedDuration) setWorkoutDuration(Number(savedDuration));
   }, [id]);
 
-  // 3. PERSISTÊNCIA: LocalStorage
+  // 4. Persistência de Dados no LocalStorage
   useEffect(() => {
     if (Object.keys(completedSets).length > 0) {
-      localStorage.setItem(
-        `workout_progress_${id}`,
-        JSON.stringify(completedSets)
-      );
+      localStorage.setItem(`workout_progress_${id}`, JSON.stringify(completedSets));
     }
     if (Object.keys(currentWeights).length > 0) {
-      localStorage.setItem(
-        `workout_weights_${id}`,
-        JSON.stringify(currentWeights)
-      );
+      localStorage.setItem(`workout_weights_${id}`, JSON.stringify(currentWeights));
     }
-  }, [completedSets, currentWeights, id]);
+    localStorage.setItem(`workout_duration_${id}`, workoutDuration.toString());
+  }, [completedSets, currentWeights, workoutDuration, id]);
 
-  // 1. Crie um novo estado para armazenar o timestamp final
-  const [endTime, setEndTime] = useState<number | null>(null);
-
-  // 2. Ajuste o useEffect do Timer
+  // 5. Lógica do Cronômetro Global do Treino
   useEffect(() => {
     let interval: any;
+    if (!isPaused) {
+      interval = setInterval(() => {
+        setWorkoutDuration((prev) => prev + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isPaused]);
 
+  // 6. Lógica do Timer de Descanso (Séries)
+  useEffect(() => {
+    let interval: any;
     if (isActive && endTime !== null) {
       interval = setInterval(() => {
         const now = Date.now();
@@ -98,20 +100,15 @@ export function WorkoutExecution() {
 
         if (remaining !== timer) {
           setTimer(remaining);
-
-          // Bips curtos de aviso (5s finais)
           if (remaining <= 5 && remaining > 0) {
-            const shortBeep = new Audio(
-              "https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
-            );
-            shortBeep.volume = 0.2; // Volume baixo costuma "misturar" melhor que pausar
-            shortBeep.play().catch(() => {});
+            const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+            beep.volume = 0.2;
+            beep.play().catch(() => {});
           }
         }
 
         if (remaining <= 0) {
-          handleTimerEnd(); // Chamando a função correta
-          setEndTime(null);
+          handleTimerEnd();
           clearInterval(interval);
         }
       }, 500);
@@ -119,106 +116,44 @@ export function WorkoutExecution() {
     return () => clearInterval(interval);
   }, [isActive, endTime, timer]);
 
-  // FUNÇÃO CORRIGIDA (Remova aquela que estava fora do componente)
+  // --- Funções de Controle ---
+
   function handleTimerEnd() {
     setIsActive(false);
     setTimer(null);
     setActiveExerciseId(null);
-    setEndTime(null); // Garante que o timestamp seja limpo
-  
-    const isAppVisible = document.visibilityState === "visible";
-  
-    // 1. CORREÇÃO DO SOM (Bipe curto de verdade)
-    // Use um som de 1 ou 2 segundos no máximo. 
-    // Se usar o 'long', vamos forçar ele parar após 2 segundos.
-    const finalBeep = new Audio("https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg");
-    finalBeep.volume = 0.5;
+    setEndTime(null);
+
+    if ("vibrate" in navigator) navigator.vibrate([500, 200, 500]);
     
-    if (isAppVisible) {
-      finalBeep.play().catch(() => {});
-      // Força o som a parar depois de 2 segundos para não tocar os 19s
-      setTimeout(() => {
-        finalBeep.pause();
-        finalBeep.currentTime = 0;
-      }, 2000);
-    }
-  
-    // 2. VIBRAÇÃO (Aumentar a intensidade para garantir que o usuário sinta)
-    if ("vibrate" in navigator) {
-      // Padrão: Vibra 500ms, pausa 200, vibra 500, pausa 200, vibra 800
-      navigator.vibrate([500, 200, 500, 200, 800]);
-    }
-  
-    // 3. NOTIFICAÇÃO
     if ("Notification" in window && Notification.permission === "granted") {
-      // Remova o "const notification =" e use apenas o "new" com o "as any"
-      new Notification("Alpha Fit Trainning", {
-        body: "Vamos lá meu atleta, o descanso acabou! 💪",
+      new Notification("Alpha Fit Training", {
+        body: "Descanso finalizado! Próxima série. 💪",
         icon: "/logo192.png",
-        tag: "rest-timer",
         renotify: true,
-        silent: isAppVisible ? false : true,
+        tag: "rest-timer"
       } as any);
     }
   }
 
   function toggleSet(exerciseId: string, setIndex: number) {
     const currentCompleted = completedSets[exerciseId] || 0;
-  
-    // Se o usuário clicar na série correta (a próxima da lista)
     if (setIndex === currentCompleted) {
-      // 1. Atualiza o progresso visual (Marca o número como feito)
       const newCompleted = currentCompleted + 1;
-      setCompletedSets(prev => ({
-        ...prev,
-        [exerciseId]: newCompleted
-      }));
-  
-      // 2. Inicia o Timer
+      setCompletedSets((prev) => ({ ...prev, [exerciseId]: newCompleted }));
+
       const ex = workout?.exercises.find((e) => e.id === exerciseId);
       if (ex) {
         const restTime = ex.rest || 60;
-  
-        setActiveExerciseId(exerciseId); // 🔥 Isso faz o relógio aparecer no card
+        setActiveExerciseId(exerciseId);
         setTimer(restTime);
-        setEndTime(Date.now() + restTime * 1000); // Timestamp para precisão
+        setEndTime(Date.now() + restTime * 1000);
         setIsActive(true);
-  
-        // 3. Avisa o Service Worker para o segundo plano
-        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-          navigator.serviceWorker.controller.postMessage({
-            type: 'START_TIMER',
-            seconds: restTime
-          });
-        }
       }
-    } 
-    // Opcional: Desmarcar a série se clicar na última feita
-    else if (setIndex === currentCompleted - 1) {
-      setCompletedSets(prev => ({
-        ...prev,
-        [exerciseId]: currentCompleted - 1
-      }));
+    } else if (setIndex === currentCompleted - 1) {
+      setCompletedSets((prev) => ({ ...prev, [exerciseId]: currentCompleted - 1 }));
     }
   }
-
-  const handleWeightChange = (exerciseId: string, value: string) => {
-    const newWeight = parseFloat(value) || 0;
-    setCurrentWeights((prev) => ({ ...prev, [exerciseId]: newWeight }));
-  };
-
-  // NOVO: Função para ver evolução
-  const handleSeeEvolution = (exerciseId: string) => {
-    navigate(`/evolucao?workoutId=${id}&exerciseId=${exerciseId}`);
-  };
-
-  const toggleExerciseFull = (exerciseId: string, totalSeries: number) => {
-    const isCurrentlyFull = (completedSets[exerciseId] || 0) === totalSeries;
-    setCompletedSets((prev) => ({
-      ...prev,
-      [exerciseId]: isCurrentlyFull ? 0 : totalSeries,
-    }));
-  };
 
   const calculateProgress = () => {
     if (!workout) return 0;
@@ -228,59 +163,65 @@ export function WorkoutExecution() {
     return Math.round((finishedExercises / workout.exercises.length) * 100);
   };
 
+  const formatTime = (seconds: number) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hrs > 0 ? hrs + ":" : ""}${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
+
   async function handleFinishWorkout() {
-    // 1. Verificamos se o treino e o usuário existem
     if (!workout || !user) return;
-
     try {
-      // 2. Referência para os LOGS (Histórico) dentro da pasta do usuário
       const logsRef = ref(db, `users/${user.uid}/logs`);
-
       await push(logsRef, {
         workoutId: id,
         workoutName: workout.name,
-        // Salva apenas YYYY-MM-DD para facilitar a busca no Dashboard
         date: new Date().toLocaleDateString("en-CA"),
+        duration: workoutDuration,
         progress: calculateProgress(),
         weightsUsed: currentWeights,
       });
 
-      // 3. Atualização de Pesos: agora salvamos na lista de treinos PRIVADA do usuário
-      // Importante: Para isso funcionar, o seu cadastro de treinos também deve salvar em `users/${user.uid}/treinos`
       const workoutRef = ref(db, `users/${user.uid}/treinos/${id}`);
-
       const updatedExercises = workout.exercises.map((ex) => ({
         ...ex,
         weight: currentWeights[ex.id] || ex.weight,
       }));
-
       await update(workoutRef, { exercises: updatedExercises });
 
-      // Limpeza de cache local
+      // Limpa dados locais
       localStorage.removeItem(`workout_progress_${id}`);
       localStorage.removeItem(`workout_weights_${id}`);
-
+      localStorage.removeItem(`workout_duration_${id}`);
       navigate("/");
     } catch (err) {
-      console.error("Erro ao salvar treino:", err);
+      console.error("Erro ao finalizar:", err);
     }
   }
 
+  // --- Renderização ---
+
   if (!workout) {
-    return <div className="app-container">Carregando treino...</div>;
+    return <div className={styles.container}>Carregando treino...</div>;
   }
 
-  // Agora o TypeScript sabe que, se chegou aqui, o 'workout' EXISTE e não é null.
   return (
     <div className={styles.container}>
+      {/* Relógio Global Flutuante */}
+      <div 
+        className={`${styles.floatingTimer} ${isPaused ? styles.paused : ""}`} 
+        onClick={() => setIsPaused(!isPaused)}
+        title="Clique para pausar/retomar"
+      >
+        <span>{isPaused ? "▶️ PAUSADO" : `⏱ ${formatTime(workoutDuration)}`}</span>
+      </div>
+
       <h1 className={styles.title}>{workout.name}</h1>
 
       <div className={styles.progressContainer}>
         <div className={styles.progressBar}>
-          <div
-            className={styles.progressFill}
-            style={{ width: `${calculateProgress()}%` }}
-          />
+          <div className={styles.progressFill} style={{ width: `${calculateProgress()}%` }} />
         </div>
         <p>{calculateProgress()}% concluído</p>
       </div>
@@ -289,66 +230,51 @@ export function WorkoutExecution() {
         {workout.exercises.map((ex) => (
           <div key={ex.id} className={styles.card}>
             <div className={styles.cardHeader}>
-              <input
-                type="checkbox"
-                className={styles.exerciseCheckbox}
-                checked={(completedSets[ex.id] || 0) === ex.series}
-                onChange={() => toggleExerciseFull(ex.id, ex.series)}
-              />
+              <div className={styles.exerciseThumbnail}>
+                <img
+                  src={ex.imageUrl || "/imagens/supino-reto-barra.webp"}
+                  alt={ex.name}
+                  onClick={() => navigate(`/detalhes/${id}/${ex.id}`)}
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    target.onerror = null;
+                    target.src = "/imagens/agachamento-livre.webp";
+                  }}
+                  style={{ cursor: "pointer" }}
+                />
+              </div>
+
               <div className={styles.exerciseMainInfo}>
                 <strong>{ex.name}</strong>
-
-                {/* EXERCÍCIO SUBSTITUTO - Aparece logo abaixo do nome */}
-                {ex.substitute && (
-                  <p className={styles.substituteText}>
-                    Substituto: <span>{ex.substitute}</span>
-                  </p>
-                )}
-
-                <p className={styles.seriesInfo}>
-                  {ex.series} séries x {ex.reps} reps
-                </p>
+                {ex.substitute && <p className={styles.substituteText}>Sub: {ex.substitute}</p>}
+                <p className={styles.seriesInfo}>{ex.series}x {ex.reps} reps</p>
               </div>
 
               <div className={styles.infoColumn}>
-                <div className={styles.weightColumn}>
-                  <div className={styles.weightInputWrapper}>
-                    <input
-                      type="number"
-                      className={styles.weightInput}
-                      value={currentWeights[ex.id] ?? ex.weight}
-                      onChange={(e) =>
-                        handleWeightChange(ex.id, e.target.value)
-                      }
-                    />
-                    <span className={styles.weightUnit}>kg</span>
-                  </div>
+                <div className={styles.weightInputWrapper}>
+                  <input
+                    type="number"
+                    className={styles.weightInput}
+                    value={currentWeights[ex.id] ?? ex.weight}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value) || 0;
+                      setCurrentWeights((prev) => ({ ...prev, [ex.id]: val }));
+                    }}
+                  />
+                  <span className={styles.weightUnit}>kg</span>
+                </div>
 
-                  {/* ATALHO PARA EVOLUÇÃO */}
-                  <button
-                    className={styles.evolutionLink}
-                    type="button"
-                    onClick={() => handleSeeEvolution(ex.id)}
-                  >
-                    📈 Evolução do treino
+                <div className={styles.actionButtons}>
+                  <button className={styles.evolutionLink} onClick={() => navigate(`/detalhes/${id}/${ex.id}`)}>
+                    🔍 Detalhes
                   </button>
-
-                  {/* ATALHO PARA VER DETALHES */}
-                  <button
-                    className={styles.evolutionLink}
-                    type="button"
-                    onClick={() => navigate("/detalhes")}
-                  >
-                    📈 Detalhes do treino
+                  <button className={styles.evolutionLink} onClick={() => navigate(`/evolucao?workoutId=${id}&exerciseId=${ex.id}`)}>
+                    📈 Evolução
                   </button>
                 </div>
 
                 {activeExerciseId === ex.id && timer !== null && (
-                  <span
-                    className={`${styles.inlineTimer} ${
-                      timer < 10 ? styles.timerUrgent : ""
-                    }`}
-                  >
+                  <span className={`${styles.inlineTimer} ${timer < 10 ? styles.timerUrgent : ""}`}>
                     {timer}s
                   </span>
                 )}

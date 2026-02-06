@@ -1,6 +1,132 @@
-.app-container {
-    width: 80%; /* Ou um valor fixo como 800px */
-    max-width: 1000px;
-    margin: 0 auto; /* Centraliza horizontalmente */
-  }
-  
+.container {
+  min-height: 100vh;
+  background-color: #f8fafc; /* Mesmo cinza claro do fundo do dashboard */
+  color: #334155;
+  padding: 20px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.backBtn {
+  background: white;
+  border: none;
+  color: #166534; /* Verde escuro para contraste */
+  padding: 8px 15px;
+  border-radius: 12px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  cursor: pointer;
+}
+
+.exerciseTitle {
+  font-size: 1.3rem;
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.mainImageContainer {
+  width: 100%;
+  aspect-ratio: 1 / 1; /* Ou 16/9 se preferir retangular */
+  background-color: #ffffff;
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.mainImageContainer img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* Para desenhos técnicos/GIFs, contain é melhor para não cortar partes do corpo */
+  padding: 10px;       /* Dá um respiro para a imagem não colar na borda */
+}
+
+
+
+/* Badges de Séries/Reps */
+.badgeContainer {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.badge {
+  background: #dcfce7; /* Verde clarinho */
+  color: #166534;
+  padding: 6px 16px;
+  border-radius: 100px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border: 1px solid #bbf7d0;
+}
+
+/* Card de Instruções */
+.infoCard {
+  background: white;
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+  margin-bottom: 20px;
+}
+
+.infoCard h3 {
+  color: #166534; /* Verde do seu projeto */
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.infoCard p {
+  color: #64748b;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+/* Mapa Muscular mais discreto */
+.muscleCard {
+  background: white;
+  padding: 20px;
+  border-radius: 20px;
+  text-align: center;
+}
+
+.muscleCard h3 {
+  color: #64748b;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 15px;
+}
+
+.muscleImageWrapper img {
+  max-width: 250px;
+  width: 100%;
+  filter: grayscale(0.2); /* Deixa um pouco mais sóbrio */
+}
+
+.seriesInfo {
+  background: #dcfce7; /* Verde clarinho igual à tela de detalhes */
+  color: #166534;      /* Verde escuro */
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: inline-block;
+  margin-top: 5px;
+}
+
+.exerciseMainInfo strong {
+  font-size: 1.1rem;
+  color: #1e293b; /* Cor mais escura para o título */
+}

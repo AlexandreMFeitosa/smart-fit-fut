@@ -35,7 +35,7 @@ export function WorkoutDetails() {
           <li key={index} className={styles.exercise}>
             <strong>{exercise.name}</strong>
             <span className={styles.sub}>
-              Substituto: {exercise.substitute}
+              Detalhes do treino: {exercise.substitute}
             </span>
           </li>
         ))}

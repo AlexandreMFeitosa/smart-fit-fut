@@ -9,70 +9,70 @@ export function Dashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(0);
   const [lastWorkout, setLastWorkout] = useState<string | null>(null);
-  const [todayWorkout, setTodayWorkout] = useState<any>(null); // Novo estado
+  const [todayWorkout, setTodayWorkout] = useState<any>(null);
 
-  const goal = 20;
-  const monthName = "Janeiro";
+  const monthName = new Date().toLocaleString("pt-BR", { month: "long" });
+
+  const [lastDuration, setLastDuration] = useState<number | null>(null);
 
   useEffect(() => {
     async function fetchDashboardData() {
-      // 3. Só buscar dados se o usuário estiver carregado
       if (!user) return;
 
-      // 4. Mudar o caminho para a "pasta" exclusiva do usuário
-      const userLogsRef = ref(db, `users/${user.uid}/logs`);
-      const snapshot = await get(userLogsRef);
+      try {
+        const userLogsRef = ref(db, `users/${user.uid}/logs`);
+        const snapshot = await get(userLogsRef);
 
-      if (!user) {
-        return (
-          <div style={{ padding: "20px", textAlign: "center" }}>
-            Carregando perfil...
-          </div>
+        if (!snapshot.exists()) {
+          setDone(0);
+          setLastWorkout(null);
+          setTodayWorkout(null);
+          return;
+        }
+
+        const data = snapshot.val();
+        const now = new Date();
+        const monthPrefix = now.toISOString().slice(0, 7); // Formato "YYYY-MM"
+        const today = now.toLocaleDateString("en-CA");
+
+        const allLogs = Object.values(data) as any[];
+
+        // 1. Contador de treinos do mês atual
+        const logsThisMonth = allLogs.filter(
+          (log) => log.date && log.date.startsWith(monthPrefix)
         );
+        setDone(logsThisMonth.length);
+
+        // 2. Verificar se treinou hoje
+        const workoutDoneToday = allLogs.find((l) => l.date === today);
+        setTodayWorkout(workoutDoneToday);
+
+        // 3. Pegar nome do último treino realizado
+
+        if (allLogs.length > 0) {
+          const sorted = [...allLogs].sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+          );
+          setLastWorkout(sorted[0].workoutName);
+          setLastDuration(sorted[0].duration); // Pega a duração do banco
+        }
+      } catch (err) {
+        console.error("Erro ao buscar dados do dashboard:", err);
       }
-
-      if (!snapshot.exists()) {
-        // Se for um usuário novo sem treinos, resetamos os estados
-        setDone(0);
-        setProgress(0);
-        setLastWorkout(null);
-        setTodayWorkout(null);
-        return;
-      }
-
-      const data = snapshot.val();
-      const now = new Date();
-      const monthPrefix = now.toISOString().slice(0, 7);
-      const today = now.toLocaleDateString("en-CA");
-
-      const allLogs = Object.values(data) as any[];
-
-      // 1. Filtrar treinos do mês (agora apenas do usuário logado)
-      const logsThisMonth = allLogs.filter(
-        (log) => log.date && log.date.startsWith(monthPrefix)
-      );
-
-      // 2. Verificar se treinou hoje
-      const workoutDoneToday = allLogs.find((l) => l.date === today);
-      setTodayWorkout(workoutDoneToday);
-
-      // 3. Pegar último treino
-      if (allLogs.length > 0) {
-        const sorted = [...allLogs].sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
-        setLastWorkout(sorted[0].workoutName);
-      }
-
-      setDone(logsThisMonth.length);
-      setProgress(Math.min((logsThisMonth.length / goal) * 100, 100));
     }
 
     fetchDashboardData();
-  }, [user]); // 5. Dependência do user para recarregar se o login mudar
+  }, [user]);
+
+  if (!user) {
+    return (
+      <div style={{ padding: "20px", textAlign: "center" }}>
+        Carregando perfil...
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
@@ -96,22 +96,34 @@ export function Dashboard() {
         </button>
       </header>
 
-      {/* CARD PROGRESSO MENSAL */}
+      {/* CARD CONTADOR MENSAL (Substituiu a Barra de Progresso) */}
       <section className={styles.card}>
         <div className={styles.cardHeader}>
-          <span>Progresso de {monthName}</span>
-          <strong>{Math.round(progress)}%</strong>
+          <span className={styles.monthLabel}>Frequência em {monthName}</span>
+          <div className={styles.counterBadge}>
+            <span className={styles.counterNumber}>{done}</span>
+          </div>
         </div>
-        <div className={styles.progressBar}>
-          <div className={styles.progress} style={{ width: `${progress}%` }} />
-        </div>
-        <p className={styles.progressText}>
-          <strong>{done}</strong> / {goal} treinos
+
+        <p className={styles.motivationText}>
+          {done === 0
+            ? "Mês começando, vamos pra cima! 🔥"
+            : `Você completou ${done} ${
+                done === 1 ? "treino" : "treinos"
+              } este mês.`}
         </p>
+
         {lastWorkout && (
-          <p className={styles.lastWorkout}>
-            Último treino: <strong>{lastWorkout}</strong>
-          </p>
+          <div className={styles.lastWorkoutDetails}>
+            <p className={styles.lastWorkout}>
+              Último: <strong>{lastWorkout}</strong>
+            </p>
+            {lastDuration && (
+              <span className={styles.durationBadge}>
+                ⏱ {Math.floor(lastDuration / 60)} min
+              </span>
+            )}
+          </div>
         )}
       </section>
 

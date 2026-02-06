@@ -127,3 +127,121 @@
   background: var(--muted);
   cursor: not-allowed;
 }
+
+.exerciseItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  /* ... resto do seu código ... */
+}
+
+/* Reutilize o estilo da miniatura acima */
+
+.exerciseThumbnail {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f0f0f0;
+  flex-shrink: 0; /* Impede a imagem de esmagar */
+}
+
+.exerciseThumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.exerciseInfo {
+  flex: 1; /* Faz o texto ocupar o espaço restante */
+}
+
+.exerciseInfo strong {
+  font-size: 1rem;
+  color: #1e293b;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.exerciseInfo p {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.subText {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.btnRemove {
+  background: #fee2e2;
+  color: #ef4444;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.btnRemove:hover {
+  background: #fecaca;
+}
+
+/* O container que segura a lista */
+.suggestionList {
+  position: absolute;
+  top: 100%; /* Gruda logo abaixo do input */
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); /* Sombra para dar profundidade */
+  z-index: 100; /* Garante que fique por cima de tudo */
+  margin-top: 5px;
+  padding: 0;
+  list-style: none;
+  overflow: hidden; /* Garante que o efeito de clique respeite as bordas arredondadas */
+  border: 1px solid #e2e8f0;
+}
+
+/* Cada item da lista */
+.suggestionList li {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  transition: background 0.2s ease;
+}
+
+/* Efeito de "Clique" (Feedback Visual) */
+.suggestionList li:active {
+  background-color: #f0fdf4; /* Um verde bem clarinho ao tocar */
+  transform: scale(0.98);    /* Leve encolhimento para parecer botão real */
+}
+
+/* Estilo do Nome do Exercício */
+.suggestionList li strong {
+  color: #1e293b;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* Estilo da Categoria (Opcional, se você mantiver o ex.category) */
+.suggestionList li span {
+  color: #64748b;
+  font-size: 0.8rem;
+  margin-top: 2px;
+}
+
+/* Remove a borda do último item */
+.suggestionList li:last-child {
+  border-bottom: none;
+}
