@@ -4,7 +4,7 @@ import Menu from "./pages/Menu";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import Login from "./pages/Login";
-import DetalhesDoTreino from "./pages/DetalhesDoTreino";
+import { DetalhesDoTreino } from "./pages/DetalhesDoTreino";
 import Dieta from "./pages/Dieta";
 
 import Configuracao from "./pages/Configuracao";
@@ -28,7 +28,9 @@ const WorkoutProgress = lazy(() =>
     default: m.WorkoutProgress,
   }))
 );
-const EditarDieta = lazy(() => import("./pages/EditarDieta").then(m => ({ default: m.EditarDieta })));
+const EditarDieta = lazy(() =>
+  import("./pages/EditarDieta").then((m) => ({ default: m.EditarDieta }))
+);
 function App() {
   return (
     <AuthProvider>
@@ -45,8 +47,14 @@ function App() {
               {/* ROTA PÚBLICA */}
               <Route path="/login" element={<Login />} />
 
-              {/* ROTA PÚBLICA */}
-              <Route path="/detalhes" element={<DetalhesDoTreino />} />
+              <Route
+                path="/detalhes/:workoutId/:exerciseId"
+                element={
+                  <ProtectedRoute>
+                    <DetalhesDoTreino />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* ROTAS PROTEGIDAS - O ProtectedRoute envolve o COMPONENTE, não o Route */}
               <Route

@@ -86,15 +86,6 @@
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
 }
 
-.cardHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 14px;
-  color: #374151;
-  margin-bottom: 10px;
-}
-
 .cardTitle {
   font-size: 15px;
   font-weight: 600;
@@ -223,4 +214,67 @@
   margin: 0;
   font-size: 0.85rem;
   color: #15803d;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.monthLabel {
+  font-size: 0.9rem;
+  color: #64748b;
+  text-transform: capitalize;
+  font-weight: 500;
+}
+
+.counterBadge {
+  background: #166534; /* Verde do seu tema */
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(22, 101, 52, 0.2);
+}
+
+.counterNumber {
+  color: white;
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+.motivationText {
+  font-size: 0.95rem;
+  color: #1e293b;
+  margin: 10px 0;
+}
+
+.lastWorkout {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 10px;
+  margin-top: 10px;
+}
+
+.lastWorkoutDetails {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #f1f5f9;
+  margin-top: 10px;
+  padding-top: 10px;
+}
+
+.durationBadge {
+  background: #f1f5f9;
+  color: #64748b;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
 }

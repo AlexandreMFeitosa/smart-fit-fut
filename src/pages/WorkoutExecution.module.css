@@ -257,3 +257,96 @@
   50% { transform: rotate(1deg); }
   100% { transform: rotate(0deg); }
 }
+
+.exerciseThumbnail {
+  width: 80px;  /* Tamanho fixo para a miniatura */
+  height: 80px;
+  background: #f8fafc;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0; /* Impede que o flexbox esmague a imagem */
+}
+
+.exerciseThumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Aqui o cover fica melhor para preencher o quadradinho */
+}
+
+.actionButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* Espaço para não clicar errado com o polegar */
+}
+
+/* WorkoutExecution.module.css */
+
+.actionButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* Aumenta o espaço para o dedo não errar o toque */
+  margin-top: 8px;
+}
+
+.linkBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #f1f5f9; /* Fundo cinza bem clarinho */
+  border: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.linkBtn:active {
+  background: #e2e8f0;
+  transform: scale(0.95);
+}
+.floatingTimer {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  
+  /* Um tom escuro azulado e translúcido para dar contraste no fundo branco */
+  background: rgba(58, 212, 110, 0.822); 
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  
+  /* Texto em branco leve para leitura perfeita */
+  color: rgba(255, 255, 255, 0.95);
+  
+  padding: 8px 14px;
+  border-radius: 10px;
+  
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  
+  z-index: 9999;
+  /* Borda sutil para definir o objeto */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Estado Pausado: Amarelo suave (cor de atenção) em vez de vermelho agressivo */
+.floatingTimer.paused {
+  background: rgba(161, 98, 7, 0.8); /* Tom ocre/âmbar */
+  border-color: rgba(253, 224, 71, 0.3);
+  color: #fefce8;
+}
+
+.floatingTimer:active {
+  transform: scale(0.92);
+}

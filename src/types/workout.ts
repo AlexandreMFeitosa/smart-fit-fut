@@ -3,9 +3,13 @@ export interface Exercise {
   name: string
   substitute: string
   series: number
-  reps: number
+  reps: string; // Agora é string para permitir "8-12"
   weight: number; // Novo campo
   rest: number;   // Novo campo (em segundos)
+  imageUrl?: string; 
+  muscleUrl?: string;
+  specs?: string;
+
 }
 
 export interface Workout {

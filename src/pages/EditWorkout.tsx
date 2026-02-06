@@ -61,7 +61,7 @@ export function EditWorkout() {
       name: exerciseName,
       substitute: substitute || "", // Se estiver vazio, salva como string vazia
       series,
-      reps,
+      reps: reps.toString(),
       weight,
       rest,
     };
