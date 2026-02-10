@@ -1,65 +1,68 @@
 .card {
-  background: white;
-  border-radius: 16px;
-  padding: 16px;
-
+  background: #fff;
+  border-radius: 16px; /* Bordas arredondadas como na Home */
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 16px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+  gap: 16px;
 }
 
-/* TOPO */
-.header {
+.topRow {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .title {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #222;
+  color: #2d3748;
+  margin: 0;
 }
 
 .count {
-  font-size: 0.8rem;
-  color: #777;
-}
-
-/* AÇÕES */
-.actions {
-  display: flex;
-  gap: 10px;
-}
-
-.actions button {
-  flex: 1;
-  padding: 12px 0;
-  border-radius: 12px;
   font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
+  color: #718096;
+}
+
+.adminActions {
+  display: flex;
+  gap: 8px;
+}
+
+.iconButton {
+  background: #f7fafc;
   border: none;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+  font-size: 1rem;
 }
 
-/* BOTÕES */
-.start {
-  background: #1f7a3d;
+.iconButton:hover {
+  background: #edf2f7;
+}
+
+.deleteIcon:hover {
+  background: #fff5f5;
+  color: #e53e3e;
+}
+
+.startFull {
+  background: #1b7a43; /* O mesmo verde do seu botão "Começar treino" */
   color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  width: 100%;
+  cursor: pointer;
+  transition: transform 0.1s active;
 }
 
-.start:active {
-  background: #17612f;
-}
-
-.edit {
-  background: #e9ecef;
-  color: #333;
-}
-
-.delete {
-  background: #ffe5e5;
-  color: #b00020;
+.startFull:active {
+  transform: scale(0.98);
 }

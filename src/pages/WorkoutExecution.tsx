@@ -102,7 +102,7 @@ export function WorkoutExecution() {
           setTimer(remaining);
           if (remaining <= 5 && remaining > 0) {
             const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
-            beep.volume = 0.2;
+            beep.volume = 0.8;
             beep.play().catch(() => {});
           }
         }
@@ -124,7 +124,7 @@ export function WorkoutExecution() {
     setActiveExerciseId(null);
     setEndTime(null);
 
-    if ("vibrate" in navigator) navigator.vibrate([500, 200, 500]);
+    if ("vibrate" in navigator) navigator.vibrate([800, 300, 800]);
     
     if ("Notification" in window && Notification.permission === "granted") {
       new Notification("Alpha Fit Training", {
@@ -208,6 +208,14 @@ export function WorkoutExecution() {
 
   return (
     <div className={styles.container}>
+    {/* Botão de Voltar Estruturado */}
+    <button 
+      className={styles.backButton} 
+      onClick={() => navigate('/treinos')}
+      title="Voltar para Meus Treinos"
+    >
+      ← Voltar
+    </button>
       {/* Relógio Global Flutuante */}
       <div 
         className={`${styles.floatingTimer} ${isPaused ? styles.paused : ""}`} 

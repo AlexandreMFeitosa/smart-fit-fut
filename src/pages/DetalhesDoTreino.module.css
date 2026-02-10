@@ -15,14 +15,29 @@
 }
 
 .backBtn {
-  background: white;
-  border: none;
-  color: #166534; /* Verde escuro para contraste */
-  padding: 8px 15px;
-  border-radius: 12px;
-  font-weight: 600;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  background-color: transparent;
+  color: #1b7a43; /* O verde padrão do seu app */
+  border: 2px solid #1b7a43;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.9rem;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1rem;
+  transition: all 0.2s ease;
+  width: fit-content;
+}
+
+.backButton:hover {
+  background-color: #1b7a43;
+  color: #ffffff;
+}
+
+.backButton:active {
+  transform: scale(0.95); /* Efeito de clique físico no celular */
 }
 
 .exerciseTitle {
@@ -130,3 +145,5 @@
   font-size: 1.1rem;
   color: #1e293b; /* Cor mais escura para o título */
 }
+
+
