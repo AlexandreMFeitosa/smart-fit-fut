@@ -5,6 +5,7 @@ import { ref, get, push, update } from "firebase/database";
 import type { Workout, Exercise } from "../types/workout";
 import styles from "./WorkoutExecution.module.css";
 import { useAuth } from "../contexts/AuthContext";
+import { useTimerKeepAlive } from "../hooks/useTimerKeepAlive";
 
 export function WorkoutExecution() {
   const { id } = useParams();
@@ -15,6 +16,7 @@ export function WorkoutExecution() {
   const [workout, setWorkout] = useState<Workout | null>(null);
   const [completedSets, setCompletedSets] = useState<{ [exerciseId: string]: number }>({});
   const [currentWeights, setCurrentWeights] = useState<{ [exerciseId: string]: number }>({});
+  const { startKeepAlive, stopKeepAlive } = useTimerKeepAlive();
   
   // --- Estados dos Timers ---
   const [timer, setTimer] = useState<number | null>(null); // Timer de descanso
@@ -91,30 +93,35 @@ export function WorkoutExecution() {
   }, [isPaused]);
 
   // 6. Lógica do Timer de Descanso (Séries)
-  useEffect(() => {
-    let interval: any;
-    if (isActive && endTime !== null) {
-      interval = setInterval(() => {
-        const now = Date.now();
-        const remaining = Math.max(0, Math.ceil((endTime - now) / 1000));
+  // 6. Lógica do Timer de Descanso (Séries) - REVISADO
+useEffect(() => {
+  let interval: any;
+  if (isActive && endTime !== null) {
+    // Pré-carregamos o áudio do bipe uma única vez
+    const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+    beep.volume = 0.6;
 
-        if (remaining !== timer) {
-          setTimer(remaining);
-          if (remaining <= 5 && remaining > 0) {
-            const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
-            beep.volume = 0.8;
-            beep.play().catch(() => {});
-          }
-        }
+    interval = setInterval(() => {
+      const now = Date.now();
+      const remaining = Math.max(0, Math.ceil((endTime - now) / 1000));
 
-        if (remaining <= 0) {
-          handleTimerEnd();
-          clearInterval(interval);
+      if (remaining !== timer) {
+        setTimer(remaining);
+        
+        // Toca o bipe apenas quando o segundo MUDA (entre 1 e 5)
+        if (remaining <= 5 && remaining > 0) {
+          beep.play().catch(() => {});
         }
-      }, 500);
-    }
-    return () => clearInterval(interval);
-  }, [isActive, endTime, timer]);
+      }
+
+      if (remaining <= 0) {
+        handleTimerEnd();
+        clearInterval(interval);
+      }
+    }, 500);
+  }
+  return () => clearInterval(interval);
+}, [isActive, endTime]); // Removi o 'timer' das dependências para evitar loops desnecessários
 
   // --- Funções de Controle ---
 
@@ -123,6 +130,7 @@ export function WorkoutExecution() {
     setTimer(null);
     setActiveExerciseId(null);
     setEndTime(null);
+    stopKeepAlive();
 
     if ("vibrate" in navigator) navigator.vibrate([800, 300, 800]);
     
@@ -149,6 +157,7 @@ export function WorkoutExecution() {
         setTimer(restTime);
         setEndTime(Date.now() + restTime * 1000);
         setIsActive(true);
+        startKeepAlive();
       }
     } else if (setIndex === currentCompleted - 1) {
       setCompletedSets((prev) => ({ ...prev, [exerciseId]: currentCompleted - 1 }));
