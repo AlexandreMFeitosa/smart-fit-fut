@@ -146,10 +146,11 @@ useEffect(() => {
 
   function toggleSet(exerciseId: string, setIndex: number) {
     const currentCompleted = completedSets[exerciseId] || 0;
+    
     if (setIndex === currentCompleted) {
       const newCompleted = currentCompleted + 1;
       setCompletedSets((prev) => ({ ...prev, [exerciseId]: newCompleted }));
-
+  
       const ex = workout?.exercises.find((e) => e.id === exerciseId);
       if (ex) {
         const restTime = ex.rest || 60;
@@ -157,7 +158,21 @@ useEffect(() => {
         setTimer(restTime);
         setEndTime(Date.now() + restTime * 1000);
         setIsActive(true);
+        
+        // 1. O áudio mudo para manter o React vivo enquanto a tela está acesa
         startKeepAlive();
+  
+        // 2. AGENDA A NOTIFICAÇÃO (Somente aqui!)
+        if ('serviceWorker' in navigator && Notification.permission === 'granted') {
+          navigator.serviceWorker.ready.then((registration) => {
+            registration.active?.postMessage({
+              type: 'SCHEDULE_NOTIFICATION',
+              delay: restTime * 1000,
+              title: "Alpha Fit 💪",
+              body: `Descanso de ${ex.name} finalizado!`
+            });
+          });
+        }
       }
     } else if (setIndex === currentCompleted - 1) {
       setCompletedSets((prev) => ({ ...prev, [exerciseId]: currentCompleted - 1 }));

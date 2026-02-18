@@ -16,18 +16,20 @@ export default defineConfig({
         name: 'Alpha Fit Training',
         short_name: 'AlphaFit',
         description: 'Foco total, Alexandre! 🚀',
-        theme_color: '#1b7a43', // O verde do seu botão principal
+        theme_color: '#1b7a43',
         background_color: '#f7fafc',
-        display: 'standalone', // Remove a barra de endereço do navegador
+        display: 'standalone',
         orientation: 'portrait',
         icons: [
           {
-            src: 'pwa-192x192.png',
+            // Ajustado para o nome real do arquivo na sua pasta public
+            src: 'icon-192.png', 
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: 'pwa-512x512.png',
+            // Ajustado para o nome real do arquivo na sua pasta public
+            src: 'icon-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'
@@ -35,9 +37,15 @@ export default defineConfig({
         ]
       },
       workbox: {
-        // Ajuda o timer a não ser "congelado" pelo sistema do celular
         globPatterns: ['**/*.{js,css,html,ico,png,svg}']
       }
     })
   ],
+  // --- ADICIONE ESTE BLOCO ABAIXO PARA LIBERAR O LOCALTUNNEL ---
+  server: {
+    allowedHosts: [
+      '.loca.lt', // Isso libera qualquer link gerado pelo localtunnel
+      'pink-lamps-camp.loca.lt' 
+    ]
+  }
 })
