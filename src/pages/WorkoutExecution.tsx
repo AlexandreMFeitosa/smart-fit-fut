@@ -14,10 +14,14 @@ export function WorkoutExecution() {
 
   // --- Estados do Treino ---
   const [workout, setWorkout] = useState<Workout | null>(null);
-  const [completedSets, setCompletedSets] = useState<{ [exerciseId: string]: number }>({});
-  const [currentWeights, setCurrentWeights] = useState<{ [exerciseId: string]: number }>({});
+  const [completedSets, setCompletedSets] = useState<{
+    [exerciseId: string]: number;
+  }>({});
+  const [currentWeights, setCurrentWeights] = useState<{
+    [exerciseId: string]: number;
+  }>({});
   const { startKeepAlive, stopKeepAlive } = useTimerKeepAlive();
-  
+
   // --- Estados dos Timers ---
   const [timer, setTimer] = useState<number | null>(null); // Timer de descanso
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null);
@@ -50,7 +54,9 @@ export function WorkoutExecution() {
           data.exercises.forEach((ex: Exercise) => {
             initialWeights[ex.id] = ex.weight;
           });
-          setCurrentWeights((prev) => (Object.keys(prev).length === 0 ? initialWeights : prev));
+          setCurrentWeights((prev) =>
+            Object.keys(prev).length === 0 ? initialWeights : prev
+          );
         }
       } catch (err) {
         console.error("Erro ao buscar treino:", err);
@@ -73,10 +79,16 @@ export function WorkoutExecution() {
   // 4. Persistência de Dados no LocalStorage
   useEffect(() => {
     if (Object.keys(completedSets).length > 0) {
-      localStorage.setItem(`workout_progress_${id}`, JSON.stringify(completedSets));
+      localStorage.setItem(
+        `workout_progress_${id}`,
+        JSON.stringify(completedSets)
+      );
     }
     if (Object.keys(currentWeights).length > 0) {
-      localStorage.setItem(`workout_weights_${id}`, JSON.stringify(currentWeights));
+      localStorage.setItem(
+        `workout_weights_${id}`,
+        JSON.stringify(currentWeights)
+      );
     }
     localStorage.setItem(`workout_duration_${id}`, workoutDuration.toString());
   }, [completedSets, currentWeights, workoutDuration, id]);
@@ -94,34 +106,36 @@ export function WorkoutExecution() {
 
   // 6. Lógica do Timer de Descanso (Séries)
   // 6. Lógica do Timer de Descanso (Séries) - REVISADO
-useEffect(() => {
-  let interval: any;
-  if (isActive && endTime !== null) {
-    // Pré-carregamos o áudio do bipe uma única vez
-    const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
-    beep.volume = 0.6;
+  useEffect(() => {
+    let interval: any;
+    if (isActive && endTime !== null) {
+      // Pré-carregamos o áudio do bipe uma única vez
+      const beep = new Audio(
+        "https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
+      );
+      beep.volume = 0.6;
 
-    interval = setInterval(() => {
-      const now = Date.now();
-      const remaining = Math.max(0, Math.ceil((endTime - now) / 1000));
+      interval = setInterval(() => {
+        const now = Date.now();
+        const remaining = Math.max(0, Math.ceil((endTime - now) / 1000));
 
-      if (remaining !== timer) {
-        setTimer(remaining);
-        
-        // Toca o bipe apenas quando o segundo MUDA (entre 1 e 5)
-        if (remaining <= 5 && remaining > 0) {
-          beep.play().catch(() => {});
+        if (remaining !== timer) {
+          setTimer(remaining);
+
+          // Toca o bipe apenas quando o segundo MUDA (entre 1 e 5)
+          if (remaining <= 5 && remaining > 0) {
+            beep.play().catch(() => {});
+          }
         }
-      }
 
-      if (remaining <= 0) {
-        handleTimerEnd();
-        clearInterval(interval);
-      }
-    }, 500);
-  }
-  return () => clearInterval(interval);
-}, [isActive, endTime]); // Removi o 'timer' das dependências para evitar loops desnecessários
+        if (remaining <= 0) {
+          handleTimerEnd();
+          clearInterval(interval);
+        }
+      }, 500);
+    }
+    return () => clearInterval(interval);
+  }, [isActive, endTime]); // Removi o 'timer' das dependências para evitar loops desnecessários
 
   // --- Funções de Controle ---
 
@@ -133,24 +147,24 @@ useEffect(() => {
     stopKeepAlive();
 
     if ("vibrate" in navigator) navigator.vibrate([800, 300, 800]);
-    
+
     if ("Notification" in window && Notification.permission === "granted") {
       new Notification("Alpha Fit Training", {
         body: "Descanso finalizado! Próxima série. 💪",
         icon: "/logo192.png",
         renotify: true,
-        tag: "rest-timer"
+        tag: "rest-timer",
       } as any);
     }
   }
 
   function toggleSet(exerciseId: string, setIndex: number) {
     const currentCompleted = completedSets[exerciseId] || 0;
-    
+
     if (setIndex === currentCompleted) {
       const newCompleted = currentCompleted + 1;
       setCompletedSets((prev) => ({ ...prev, [exerciseId]: newCompleted }));
-  
+
       const ex = workout?.exercises.find((e) => e.id === exerciseId);
       if (ex) {
         const restTime = ex.rest || 60;
@@ -158,24 +172,30 @@ useEffect(() => {
         setTimer(restTime);
         setEndTime(Date.now() + restTime * 1000);
         setIsActive(true);
-        
+
         // 1. O áudio mudo para manter o React vivo enquanto a tela está acesa
         startKeepAlive();
-  
+
         // 2. AGENDA A NOTIFICAÇÃO (Somente aqui!)
-        if ('serviceWorker' in navigator && Notification.permission === 'granted') {
+        if (
+          "serviceWorker" in navigator &&
+          Notification.permission === "granted"
+        ) {
           navigator.serviceWorker.ready.then((registration) => {
             registration.active?.postMessage({
-              type: 'SCHEDULE_NOTIFICATION',
+              type: "SCHEDULE_NOTIFICATION",
               delay: restTime * 1000,
               title: "Alpha Fit 💪",
-              body: `Descanso de ${ex.name} finalizado!`
+              body: `Descanso de ${ex.name} finalizado!`,
             });
           });
         }
       }
     } else if (setIndex === currentCompleted - 1) {
-      setCompletedSets((prev) => ({ ...prev, [exerciseId]: currentCompleted - 1 }));
+      setCompletedSets((prev) => ({
+        ...prev,
+        [exerciseId]: currentCompleted - 1,
+      }));
     }
   }
 
@@ -191,7 +211,9 @@ useEffect(() => {
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    return `${hrs > 0 ? hrs + ":" : ""}${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    return `${hrs > 0 ? hrs + ":" : ""}${mins
+      .toString()
+      .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
   async function handleFinishWorkout() {
@@ -232,28 +254,45 @@ useEffect(() => {
 
   return (
     <div className={styles.container}>
-    {/* Botão de Voltar Estruturado */}
-    <button 
-      className={styles.backButton} 
-      onClick={() => navigate('/treinos')}
-      title="Voltar para Meus Treinos"
-    >
-      ← Voltar
-    </button>
+      {/* Botão de Voltar Estruturado */}
+      <button
+        className={styles.backButton}
+        onClick={() => {
+          // 1. Limpa o LocalStorage específico deste treino
+          localStorage.removeItem(`workout_progress_${id}`);
+          localStorage.removeItem(`workout_weights_${id}`);
+          localStorage.removeItem(`workout_duration_${id}`);
+
+          // 2. Zera os estados locais para garantir que a UI reflita a limpeza
+          setWorkoutDuration(0);
+          setCompletedSets({});
+
+          // 3. Volta para a tela de treinos
+          navigate("/treinos");
+        }}
+        title="Voltar para Meus Treinos"
+      >
+        ← Voltar
+      </button>
       {/* Relógio Global Flutuante */}
-      <div 
-        className={`${styles.floatingTimer} ${isPaused ? styles.paused : ""}`} 
+      <div
+        className={`${styles.floatingTimer} ${isPaused ? styles.paused : ""}`}
         onClick={() => setIsPaused(!isPaused)}
         title="Clique para pausar/retomar"
       >
-        <span>{isPaused ? "▶️ PAUSADO" : `⏱ ${formatTime(workoutDuration)}`}</span>
+        <span>
+          {isPaused ? "▶️ PAUSADO" : `⏱ ${formatTime(workoutDuration)}`}
+        </span>
       </div>
 
       <h1 className={styles.title}>{workout.name}</h1>
 
       <div className={styles.progressContainer}>
         <div className={styles.progressBar}>
-          <div className={styles.progressFill} style={{ width: `${calculateProgress()}%` }} />
+          <div
+            className={styles.progressFill}
+            style={{ width: `${calculateProgress()}%` }}
+          />
         </div>
         <p>{calculateProgress()}% concluído</p>
       </div>
@@ -278,8 +317,12 @@ useEffect(() => {
 
               <div className={styles.exerciseMainInfo}>
                 <strong>{ex.name}</strong>
-                {ex.substitute && <p className={styles.substituteText}>Sub: {ex.substitute}</p>}
-                <p className={styles.seriesInfo}>{ex.series}x {ex.reps} reps</p>
+                {ex.substitute && (
+                  <p className={styles.substituteText}>Sub: {ex.substitute}</p>
+                )}
+                <p className={styles.seriesInfo}>
+                  {ex.series}x {ex.reps} reps
+                </p>
               </div>
 
               <div className={styles.infoColumn}>
@@ -297,16 +340,28 @@ useEffect(() => {
                 </div>
 
                 <div className={styles.actionButtons}>
-                  <button className={styles.evolutionLink} onClick={() => navigate(`/detalhes/${id}/${ex.id}`)}>
+                  <button
+                    className={styles.evolutionLink}
+                    onClick={() => navigate(`/detalhes/${id}/${ex.id}`)}
+                  >
                     🔍 Detalhes
                   </button>
-                  <button className={styles.evolutionLink} onClick={() => navigate(`/evolucao?workoutId=${id}&exerciseId=${ex.id}`)}>
+                  <button
+                    className={styles.evolutionLink}
+                    onClick={() =>
+                      navigate(`/evolucao?workoutId=${id}&exerciseId=${ex.id}`)
+                    }
+                  >
                     📈 Evolução
                   </button>
                 </div>
 
                 {activeExerciseId === ex.id && timer !== null && (
-                  <span className={`${styles.inlineTimer} ${timer < 10 ? styles.timerUrgent : ""}`}>
+                  <span
+                    className={`${styles.inlineTimer} ${
+                      timer < 10 ? styles.timerUrgent : ""
+                    }`}
+                  >
                     {timer}s
                   </span>
                 )}

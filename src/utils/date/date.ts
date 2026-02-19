@@ -1,127 +1,112 @@
-export function getToday(): string {
-  return new Date().toISOString().split("T")[0];
-}
+import { generateSlug } from "../generateSlug";
 
-export const exerciseDatabase = [
-  // --- PEITO ---
+const baseExercises = [
+  // Exercicios de Peito ...
   { 
-    name: "Supino Reto", 
-    category: "Peito", 
-    specs: "Faça isometria de 2 segundos no momento da contração.",
-    imageUrl: "/imagens/supino-reto-halteres-foto.jpg", 
-    muscleUrl: "/imagens/supino-reto-halteres-musculos.webp"
+    name: "Supino Reto com Barra",
+    category: "Peito",
+    specs: "Desca a barra até o peito..."
   },
   { 
-    name: "Supino Inclinado", 
-    category: "Peito", 
-    specs: "Foco na parte superior do peito. Não bata os halteres no topo.",
-    imageUrl: "/imagens/supino-inclinado-halteres-foto.png",
-    muscleUrl: "/imagens/supino-inclinado-gif.gif"
+    name: "Supino Reto com Halteres", 
+    category: "Peito",
+    specs: "Desca os halteres lateralmente ao peito..."
   },
   { 
-    name: "Crucifixo Máquina (Peck Deck)", 
-    category: "Peito", 
-    specs: "Mantenha os cotovelos levemente flexionados e sinta o alongamento.",
-    imageUrl: "/imagens/peck-deck-musculo.avif",
-    muscleUrl: "/imagens/peck-deck-musculo.avif"
+    name: "Supino Inclinado",
+    category: "Peito",
+    specs: "Puxe a barra em direcao à parte superior do peito."
+  },
+  { 
+    name: "Supino Declinado",
+    category: "Peito",
+    specs: "Puxe a barra em direcao à parte inferior do peito."
+  },
+  { 
+    name: "Crucifixo Maquina",
+    category: "Peito",
+    specs: "Abra os bracos lateralmente mantendo uma leve flexao nos cotovelos..."
+  },
+  { 
+    name: "Crossover no Cabo",
+    category: "Peito",
+    specs: "Puxe as alcas do cabo para frente e para baixo, cruzando as maos na frente do corpo..."
   },
 
-  // --- COSTAS ---
-  { 
-    name: "Puxada Alta Aberta", 
-    category: "Costas", 
-    specs: "Puxe em direção ao peito focando em esmagar as escápulas.",
-    imageUrl: "/imagens/puxada-aberta-foto.jpeg",
-    muscleUrl: "/imagens/puxada-aberta-musculo.webp"
-  },
-  { 
-    name: "Remada Baixa Triângulo", 
-    category: "Costas", 
-    specs: "Mantenha a coluna reta e puxe o peso em direção ao umbigo.",
-    imageUrl: "/imagens/remada-baixa-triângulo.webp",
-    muscleUrl: "/imagens/remada-baixa-musculo.webp"
-  },
+  // Costas
   { 
     name: "Remada Curvada com Barra", 
-    category: "Costas", 
-    specs: "Mantenha o tronco inclinado e o core bem contraído.",
-    imageUrl: "/imagens/remada-curvada.jpeg",
-    muscleUrl: "/imagens/remada-curvada-gif.webp"
-  },
-
-  // --- PERNAS ---
-  { 
-    name: "Agachamento Livre", 
-    category: "Pernas", 
-    specs: "Mantenha o calcanhar firme no chão e coluna alinhada.",
-    imageUrl: "/imagens/agachamento-livre.webp",
-    muscleUrl: "/imagens/agachamento-livre-musculo.avif"
+    category: "Costas",
+    specs: "Puxe a barra em direcao ao abdômen, mantendo as costas retas..."
   },
   { 
-    name: "Leg Press 45°", 
-    category: "Pernas", 
-    specs: "Não estenda totalmente os joelhos para preservar a articulação.",
-    imageUrl: "/imagens/leg-press-45.gif",
-    muscleUrl: "/imagens/leg-press-45.jpeg"
+    name: "Remada Unilateral com Halteres", 
+    category: "Costas",
+    specs: "Puxe o haltere em direcao ao quadril, mantendo o tronco estável..."
+  },
+  { 
+    name: "Puxada na Polia Alta", 
+    category: "Costas",
+    specs: "Puxe a barra em direcao ao peito, mantendo os cotovelos apontados para baixo..."
+  },
+  { 
+    name: "Remada Sentado Baixa", 
+    category: "Costas",
+    specs: "Puxe a alca do cabo em direcao ao abdômen, mantendo as costas retas..."
+  },
+  //pernas
+  {
+    name: "Agachamento Livre com Barra", 
+    category: "Pernas",
+    specs: "Desca o quadril para trás e para baixo, mantendo o peito erguido..."
+  },
+  { 
+    name: "Leg Press 45", 
+    category: "Pernas",
+    specs: "Empurre a plataforma com os pés, estendendo as pernas..."
   },
   { 
     name: "Cadeira Extensora", 
-    category: "Pernas", 
-    specs: "Ajuste o banco para que o joelho coincida com o eixo da máquina.",
-    imageUrl: "/imagens/cadeira-extensora.gif",
-    muscleUrl: "/imagens/extensora-musculo.webp"
+    category: "Pernas",
+    specs: "Estenda as pernas contra a resistência da máquina..."
   },
   { 
-    name: "Mesa Flexora", 
-    category: "Pernas", 
-    specs: "Mantenha o quadril colado no banco durante a subida.",
-    imageUrl: "/imagens/mesa-flexora.gif",
-    muscleUrl: "/imagens/flexora-musculo.webp"
+    name: "Cadeira Flexora", 
+    category: "Pernas",
+    specs: "Flexione as pernas contra a resistência da máquina..."
   },
-
-  // --- OMBROS ---
-  { 
-    name: "Elevação Lateral", 
-    category: "Ombros", 
-    specs: "Suba os braços até a linha dos ombros com leve flexão no cotovelo.",
-    imageUrl: "/imagens/elevacao-lateral.gif",
-    muscleUrl: "/imagens/elevacao-lateral-musculo.webp"
+  //ombros
+  {
+    name: "Desenvolvimento com Barra", 
+    category: "Ombros",
+    specs: "Empurre a barra para cima até estender completamente os bracos..."
   },
   { 
-    name: "Desenvolvimento com Halteres", 
-    category: "Ombros", 
-    specs: "Suba os pesos em arco, sem encostar um halter no outro.",
-    imageUrl: "/imagens/desenvolvimento-ombros.gif",
-    muscleUrl: "/imagens/desenvolvimento-musculo.webp"
-  },
-
-  // --- BRAÇOS (BÍCEPS/TRÍCEPS) ---
-  { 
-    name: "Rosca Direta", 
-    category: "Bíceps", 
-    specs: "Mantenha os cotovelos colados ao tronco e evite balançar o corpo.",
-    imageUrl: "/imagens/rosca-direta.gif",
-    muscleUrl: "/imagens/rosca-direta-musculo.avif"
+    name: "Elevacao Lateral com Halteres", 
+    category: "Ombros",
+    specs: "Levante os halteres lateralmente até a altura dos ombros..."
   },
   { 
-    name: "Rosca Martelo", 
-    category: "Bíceps", 
-    specs: "Pegada neutra (palmas viradas para dentro). Foco no braquiorradial.",
-    imageUrl: "/imagens/rosca-martelo.gif",
-    muscleUrl: "/imagens/martelo-musculo.webp"
+    name: "Elevacao Frontal com Halteres", 
+    category: "Ombros",
+    specs: "Levante os halteres para frente até a altura dos ombros..."
   },
   { 
-    name: "Tríceps Pulley (Corda)", 
-    category: "Tríceps", 
-    specs: "Abra a corda no final do movimento para maior contração.",
-    imageUrl: "/imagens/triceps-corda.gif",
-    muscleUrl: "/imagens/triceps-corda-musculo.webp"
-  },
-  { 
-    name: "Tríceps Testa", 
-    category: "Tríceps", 
-    specs: "Desça o peso em direção à testa mantendo os cotovelos fechados.",
-    imageUrl: "/imagens/triceps-testa.gif",
-    muscleUrl: "/imagens/triceps-testa-musculo.webp"
+    name: "Desenvolvimento maquina", 
+    category: "Ombros",
+    specs: "Empurre as alcas da máquina para cima até estender completamente os bracos..."
   }
 ];
+
+export const exerciseDatabase = baseExercises.map(ex => {
+  const exerciseSlug = generateSlug(ex.name);
+  const categorySlug = generateSlug(ex.category); // Cria o nome da pasta (ex: "Peito" -> "peito")
+
+  return {
+    ...ex,
+    id: exerciseSlug,
+    // O caminho agora monta: /imagens/categoria/nome-do-exercicio.webp
+    imageUrl: `/imagens/${categorySlug}/${exerciseSlug}.png`, 
+    muscleUrl: `/imagens/${categorySlug}/${exerciseSlug}-musculo.png`
+  };
+});
