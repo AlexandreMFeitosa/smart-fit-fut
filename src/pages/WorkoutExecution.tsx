@@ -67,45 +67,115 @@ export function WorkoutExecution() {
 
   // 3. Recuperação de Progresso Local (LocalStorage)
   useEffect(() => {
+    // 1. Identifica se houve troca de treino ANTES de carregar qualquer dado
+    const lastWorkoutId = localStorage.getItem("last_active_workout_id");
+
+    if (lastWorkoutId && lastWorkoutId !== id) {
+      // Se o ID mudou, fazemos uma "limpa" geral nos dados do treino anterior
+      localStorage.removeItem(`workout_progress_${lastWorkoutId}`);
+      localStorage.removeItem(`workout_startTime_${lastWorkoutId}`);
+      localStorage.removeItem(`rest_endTime_${lastWorkoutId}`);
+      localStorage.removeItem(`rest_activeId_${lastWorkoutId}`);
+      localStorage.removeItem(`workout_weights_${lastWorkoutId}`);
+
+      setIsActive(false);
+      setTimer(null);
+      setEndTime(null);
+      setActiveExerciseId(null);
+      stopKeepAlive();
+
+      // RESETA OS DADOS DE PROGRESSO NA TELA
+      setWorkoutDuration(0);
+      setCompletedSets({});
+    }
+
+    // 2. Registra o novo treino atual
+    if (id) {
+      localStorage.setItem("last_active_workout_id", id);
+    }
+
+    // 3. Agora sim, buscamos os dados do treino atual (que podem ser novos ou recuperados)
     const savedSets = localStorage.getItem(`workout_progress_${id}`);
     const savedWeights = localStorage.getItem(`workout_weights_${id}`);
-    const savedDuration = localStorage.getItem(`workout_duration_${id}`);
+    const savedStartTime = localStorage.getItem(`workout_startTime_${id}`);
+    const savedEndTime = localStorage.getItem(`rest_endTime_${id}`);
+    const savedActiveId = localStorage.getItem(`rest_activeId_${id}`);
 
     if (savedSets) setCompletedSets(JSON.parse(savedSets));
     if (savedWeights) setCurrentWeights(JSON.parse(savedWeights));
-    if (savedDuration) setWorkoutDuration(Number(savedDuration));
+
+    // 4. Lógica do Cronômetro Global
+    if (savedStartTime) {
+      const startTime = Number(savedStartTime);
+      const now = Date.now();
+      setWorkoutDuration(Math.floor((now - startTime) / 1000));
+    } else {
+      // Se não tinha startTime (treino novo ou limpo acima), define agora
+      const now = Date.now().toString();
+      localStorage.setItem(`workout_startTime_${id}`, now);
+      setWorkoutDuration(0); // Garante que o estado comece em zero
+    }
+
+    // 5. Lógica do Timer de Descanso
+    if (savedEndTime) {
+      const end = Number(savedEndTime);
+      if (end > Date.now()) {
+        setEndTime(end);
+        setActiveExerciseId(savedActiveId);
+        setIsActive(true);
+      }
+    }
   }, [id]);
 
   // 4. Persistência de Dados no LocalStorage
   useEffect(() => {
+    // 1. Salva o progresso das séries (apenas se houver progresso)
     if (Object.keys(completedSets).length > 0) {
       localStorage.setItem(
         `workout_progress_${id}`,
         JSON.stringify(completedSets)
       );
     }
+
+    // 2. Salva os pesos (sempre que houver pesos definidos ou alterados)
     if (Object.keys(currentWeights).length > 0) {
       localStorage.setItem(
         `workout_weights_${id}`,
         JSON.stringify(currentWeights)
       );
     }
-    localStorage.setItem(`workout_duration_${id}`, workoutDuration.toString());
-  }, [completedSets, currentWeights, workoutDuration, id]);
+    // 3. Gerencia o Timer de Descanso
+    if (endTime) {
+      localStorage.setItem(`rest_endTime_${id}`, endTime.toString());
+      localStorage.setItem(`rest_activeId_${id}`, activeExerciseId || "");
+    } else {
+      // Só remove as chaves se o timer não estiver ativo
+      localStorage.removeItem(`rest_endTime_${id}`);
+      localStorage.removeItem(`rest_activeId_${id}`);
+    }
+
+    // 4. Salva a duração total do treino
+  }, [completedSets, currentWeights, endTime, activeExerciseId, id]);
 
   // 5. Lógica do Cronômetro Global do Treino
+  // 5. Lógica do Cronômetro Global do Treino - REVISADO
   useEffect(() => {
     let interval: any;
     if (!isPaused) {
       interval = setInterval(() => {
-        setWorkoutDuration((prev) => prev + 1);
+        const startTime = localStorage.getItem(`workout_startTime_${id}`);
+        if (startTime) {
+          const now = Date.now();
+          const diff = Math.floor((now - Number(startTime)) / 1000);
+          setWorkoutDuration(diff);
+        }
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isPaused]);
+  }, [isPaused, id]);
 
   // 6. Lógica do Timer de Descanso (Séries)
-  // 6. Lógica do Timer de Descanso (Séries) - REVISADO
+
   useEffect(() => {
     let interval: any;
     if (isActive && endTime !== null) {
@@ -240,6 +310,8 @@ export function WorkoutExecution() {
       localStorage.removeItem(`workout_progress_${id}`);
       localStorage.removeItem(`workout_weights_${id}`);
       localStorage.removeItem(`workout_duration_${id}`);
+      localStorage.removeItem(`workout_startTime_${id}`);
+      localStorage.removeItem("last_active_workout_id");
       navigate("/");
     } catch (err) {
       console.error("Erro ao finalizar:", err);
@@ -262,6 +334,18 @@ export function WorkoutExecution() {
           localStorage.removeItem(`workout_progress_${id}`);
           localStorage.removeItem(`workout_weights_${id}`);
           localStorage.removeItem(`workout_duration_${id}`);
+          localStorage.removeItem(`rest_endTime_${id}`); // Limpar descanso ao abortar treino
+          localStorage.removeItem(`rest_activeId_${id}`);
+          localStorage.removeItem(`workout_startTime_${id}`);
+          localStorage.removeItem("last_active_workout_id");
+
+          setIsActive(false);
+          setTimer(null);
+          setEndTime(null);
+          setActiveExerciseId(null);
+          setWorkoutDuration(0);
+          setCompletedSets({});
+          stopKeepAlive();
 
           // 2. Zera os estados locais para garantir que a UI reflita a limpeza
           setWorkoutDuration(0);
