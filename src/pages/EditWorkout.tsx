@@ -22,6 +22,7 @@ export function EditWorkout() {
   const [reps, setReps] = useState(12);
   const [weight, setWeight] = useState(0);
   const [rest, setRest] = useState(60);
+  const [anotacao, setAnotacao] = useState("");
 
   useEffect(() => {
     async function fetchWorkout() {
@@ -64,6 +65,7 @@ export function EditWorkout() {
       reps: reps.toString(),
       weight,
       rest,
+      anotacao
     };
 
     setWorkout({
@@ -78,6 +80,7 @@ export function EditWorkout() {
     setReps(12);
     setWeight(0);
     setRest(60);
+    setAnotacao("");
   }
 
   function handleRemoveExercise(exerciseId: string) {
