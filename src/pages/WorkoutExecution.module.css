@@ -377,3 +377,30 @@
 .backButton:active {
   transform: scale(0.95); /* Efeito de clique físico no celular */
 }
+
+.notesSection {
+  margin-top: 8px;
+  width: 100%;
+}
+
+.tipToggleButton {
+  background: none;
+  border: none;
+  color: #16a34a; /* Verde igual ao seu tema */
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+.notesContent {
+  margin-top: 5px;
+  padding: 8px;
+  background-color: #f9fafb;
+  border-radius: 8px;
+  border-left: 3px solid #16a34a;
+  font-size: 0.85rem;
+  color: #4b5563;
+  font-style: italic;
+}

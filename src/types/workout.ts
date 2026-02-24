@@ -9,6 +9,7 @@ export interface Exercise {
   imageUrl?: string; 
   muscleUrl?: string;
   specs?: string;
+  anotacao: string;
 
 }
 

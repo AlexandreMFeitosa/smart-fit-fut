@@ -49,8 +49,7 @@ export function DetalhesDoTreino() {
   const handleImageError = (
     e: React.SyntheticEvent<HTMLImageElement, Event>
   ) => {
-    e.currentTarget.src =
-      "/imagens/supino-reto-barra.webp";
+    e.currentTarget.src = "/imagens/supino-reto-barra.webp";
   };
 
   return (
@@ -61,7 +60,7 @@ export function DetalhesDoTreino() {
         </button>
         <h1 className={styles.exerciseTitle}>{exercise.name}</h1>
       </header>
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '-10px' }}>
+      <div style={{ display: "flex", gap: "10px", marginBottom: "-10px" }}>
         <span className={styles.badge}>{exercise.series} Séries</span>
         <span className={styles.badge}>{exercise.reps} Reps</span>
       </div>
@@ -75,12 +74,22 @@ export function DetalhesDoTreino() {
         />
       </div>
 
-      <div className={styles.infoCard}>
-        <h3>📋 EXECUÇÃO CORRETA</h3>
+      <div className={`${styles.infoCard} ${styles.personalNote}`}>
+        <h3>📝 Minhas Anotações</h3>
         <p>
-          {exercise.specs ||
-            "Siga as orientações do seu instrutor para este movimento."}
+          {exercise.anotacao ? (
+            exercise.anotacao
+          ) : (
+            <span className={styles.emptyNote}>
+              Nenhuma anotação personalizada para este exercício.
+            </span>
+          )}
         </p>
+      </div>
+
+      <div className={styles.infoCard}>
+        <h3>📋 EXECUÇÃO PADRÃO</h3>
+        <p>{exercise.specs || "Siga as orientações do seu instrutor."}</p>
       </div>
 
       <div className={styles.muscleCard}>
