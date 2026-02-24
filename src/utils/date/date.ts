@@ -73,12 +73,12 @@ const baseExercises = [
   {
     name: "Cadeira Extensora",
     category: "Pernas",
-    specs: "Estenda as pernas contra a resistência da máquina...",
+    specs: "Estenda as pernas contra a resistencia da máquina...",
   },
   {
     name: "Cadeira Flexora",
     category: "Pernas",
-    specs: "Flexione as pernas contra a resistência da máquina...",
+    specs: "Flexione as pernas contra a resistencia da máquina...",
   },
   //ombros
   {
@@ -102,6 +102,51 @@ const baseExercises = [
     specs:
       "Empurre as alcas da máquina para cima até estender completamente os bracos...",
   },
+  // triceps
+  {
+    name: "Triceps Testa com Barra",
+    category: "Triceps",
+    specs:
+      "Desca a barra em direção à testa, mantendo os cotovelos fixos...",
+  },
+  {
+    name: "Triceps Corda no Cabo",
+    category: "Triceps",
+    specs:
+      "Puxe a corda para baixo, estendendo completamente os braços e separando as pontas da corda no final do movimento...",
+  },
+  {
+    name: "Triceps Frances com Halteres",
+    category: "Triceps",
+    specs:
+      "Desca o haltere atrás da cabeça, mantendo os cotovelos fixos e próximos às orelhas...",
+  },
+  //biceps
+  {
+    name: "Rosca Direta com Barra",
+    category: "Biceps",
+    specs:
+      "Flexione os cotovelos para levantar a barra em direção aos ombros, mantendo os cotovelos próximos ao corpo...",
+  },
+  {
+    name: "Rosca Alternada com Halteres",
+    category: "Biceps",
+    specs:
+      "Flexione um braço de cada vez para levantar o haltere em direção ao ombro, mantendo os cotovelos próximos ao corpo...",
+  },
+  {
+    name: "Rosca Martelo com Halteres",
+    category: "Biceps",
+    specs:
+      "Flexione os cotovelos para levantar os halteres em direção aos ombros, mantendo as palmas das mãos voltadas uma para a outra...",
+  },
+  {
+    name: "Biceps Articulado Maquina",
+    category: "Biceps",
+    specs:
+      "Flexione os cotovelos para levantar a alca da máquina em direção aos ombros, mantendo os cotovelos próximos ao corpo...",
+  }
+  
 ];
 
 export const exerciseDatabase = baseExercises.map((ex) => {
