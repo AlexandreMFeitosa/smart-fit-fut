@@ -245,3 +245,14 @@
 .suggestionList li:last-child {
   border-bottom: none;
 }
+
+textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box; /* Fundamental para não "vazar" do card */
+  resize: vertical; /* Permite redimensionar verticalmente, mas não horizontalmente */
+}
