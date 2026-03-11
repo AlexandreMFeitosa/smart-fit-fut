@@ -12,7 +12,7 @@ export function DetalhesDoTreino() {
   const [exercise, setExercise] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  const fallbackImg = "/imagens/supino-reto-barra.webp";
+  const fallbackImg = "/imagens/sem-imagem.png";
 
   useEffect(() => {
     async function loadExercise() {

@@ -387,13 +387,13 @@ export function WorkoutExecution() {
             <div className={styles.cardHeader}>
               <div className={styles.exerciseThumbnail}>
                 <img
-                  src={ex.imageUrl || "/imagens/supino-reto-barra.webp"}
+                  src={ex.imageUrl || "/imagens/sem-imagem.png"}
                   alt={ex.name}
                   onClick={() => navigate(`/detalhes/${id}/${ex.id}`)}
                   onError={(e) => {
                     const target = e.currentTarget;
                     target.onerror = null;
-                    target.src = "/imagens/agachamento-livre.webp";
+                    target.src = "/imagens/sem-imagem.png";
                   }}
                   style={{ cursor: "pointer" }}
                 />

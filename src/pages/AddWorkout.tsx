@@ -86,7 +86,7 @@ export function AddWorkout() {
         substitute: ex.substitute || "",
         anotacao: ex.anotacao || "",
         // Se não houver imagem, usa a padrão para não enviar undefined
-        imageUrl: ex.imageUrl || "/imagens/supino-reto-barra.webp",
+        imageUrl: ex.imageUrl || "/imagens/sem-imagem.png",
         muscleUrl: ex.muscleUrl || "/imagens/sem-imagem.png",
         specs: ex.specs || "Siga a execução padrão.",
       }));
@@ -234,7 +234,7 @@ export function AddWorkout() {
                   alt={ex.name}
                   onError={(e) => {
                     (e.target as HTMLImageElement).src =
-                      "/imagens/supino-reto-barra.webp";
+                      "/imagens/sem-imagem.png";
                   }}
                 />
               </div>
