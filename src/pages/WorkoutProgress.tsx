@@ -117,21 +117,29 @@ export function WorkoutProgress() {
     }
   };
 
-  if (loading) return <div className="app-container">Carregando evolução...</div>;
+  if (loading) return <div className={styles.appWrapper}>Carregando evolução...</div>;
 
   return (
-    <div className="app-container">
+    <div className={styles.appWrapper}>
       <div className={styles.progressContainer}>
         <h1 className={styles.title}>EVOLUÇÃO DE CARGA</h1>
 
         <div className={styles.filterSection}>
-          <select value={selectedWorkoutId} onChange={(e) => setSelectedWorkoutId(e.target.value)} className={styles.select}>
+          <select 
+            value={selectedWorkoutId} 
+            onChange={(e) => setSelectedWorkoutId(e.target.value)} 
+            className={styles.select}
+          >
             {workouts.map((w) => (
               <option key={w.id} value={w.id}>{w.name}</option>
             ))}
           </select>
 
-          <select value={selectedExerciseId} onChange={(e) => setSelectedExerciseId(e.target.value)} className={styles.select}>
+          <select 
+            value={selectedExerciseId} 
+            onChange={(e) => setSelectedExerciseId(e.target.value)} 
+            className={styles.select}
+          >
             {(workouts.find((w) => w.id === selectedWorkoutId)?.exercises || []).map((ex: any) => (
               <option key={ex.id} value={ex.id}>{ex.name}</option>
             ))}
@@ -148,10 +156,25 @@ export function WorkoutProgress() {
                     <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 12 }} dy={10} />
-                <YAxis hide={true} domain={["dataMin - 10", "dataMax + 10"]} />
+                <XAxis 
+                  dataKey="date" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fill: "#94a3b8", fontSize: 12 }} 
+                  dy={10} 
+                />
+                <YAxis hide={true} domain={["dataMin - 5", "dataMax + 5"]} />
                 <Tooltip cursor={false} content={() => null} />
-                <Area type="monotone" dataKey="weight" stroke="#10b981" strokeWidth={3} fill="url(#colorWeight)" dot={{ r: 5, fill: "#fff", stroke: "#10b981", strokeWidth: 2 }} label={<CustomizedLabel />} />
+                <Area 
+                  type="monotone" 
+                  dataKey="weight" 
+                  stroke="#10b981" 
+                  strokeWidth={3} 
+                  fill="url(#colorWeight)" 
+                  dot={{ r: 5, fill: "#fff", stroke: "#10b981", strokeWidth: 2 }} 
+                  label={<CustomizedLabel />} 
+                  animationDuration={1200}
+                />
               </AreaChart>
             </ResponsiveContainer>
           ) : (
@@ -160,22 +183,7 @@ export function WorkoutProgress() {
         </div>
 
         <div className={styles.buttonContainer}>
-          <button 
-            onClick={handleInsertWeight} 
-            style={{
-              backgroundColor: "#10b981",
-              color: "white",
-              border: "none",
-              borderRadius: "12px",
-              padding: "12px 20px",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              fontWeight: "bold",
-              cursor: "pointer",
-              boxShadow: "0 4px 6px rgba(16, 185, 129, 0.2)"
-            }}
-          >
+          <button onClick={handleInsertWeight} className={styles.btnPrimary}>
             <PlusCircle size={20} />
             INSERIR NOVA CARGA
           </button>

@@ -223,3 +223,16 @@
   font-weight: bold;
   width: 100%;
 }
+
+.btnAddFloating {
+
+  background: #3c9fbd; /* O mesmo verde do seu botão "Começar treino" */
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  width: 100%;
+  cursor: pointer;
+  transition: transform 0.1s active;
+}

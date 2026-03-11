@@ -8,6 +8,7 @@ import { DetalhesDoTreino } from "./pages/DetalhesDoTreino";
 import Dieta from "./pages/Dieta";
 
 import Configuracao from "./pages/Configuracao";
+import IndicacaoDeProfissionais from "./pages/IndicacaoDeProfissionais";
 
 // Lazy loading das páginas
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -125,6 +126,15 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Configuracao />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/profissionais"
+                element={
+                  <ProtectedRoute>
+                    <IndicacaoDeProfissionais />
                   </ProtectedRoute>
                 }
               />
