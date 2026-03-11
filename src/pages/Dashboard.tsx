@@ -162,11 +162,12 @@ export function Dashboard() {
         >
           ➕ <span>Novo Treino</span>
         </button>
+
         <button
           className={styles.actionButton}
-          onClick={() => navigate("/historico")}
+          onClick={() => navigate("/profissionais")}
         >
-          📅 <span>Histórico</span>
+          🍎 / 🏋️‍♂️  <span>Nutricionista e Personal indicados</span>
         </button>
 
         <button
@@ -175,11 +176,19 @@ export function Dashboard() {
         >
           🍎 <span>Minha Dieta</span>
         </button>
+
         <button
           className={styles.actionButton}
           onClick={() => navigate("/evolucao")}
         >
           📈 <span>Evolução</span>
+        </button>
+
+        <button
+          className={styles.actionButton}
+          onClick={() => navigate("/historico")}
+        >
+          📅 <span>Histórico</span>
         </button>
       </section>
     </div>
