@@ -158,7 +158,7 @@ export function Dashboard() {
       <section className={styles.actions}>
         <button
           className={styles.actionButton}
-          onClick={() => navigate("/adicionar-treino")}
+          onClick={() => navigate("/add-workout")}
         >
           ➕ <span>Novo Treino</span>
         </button>

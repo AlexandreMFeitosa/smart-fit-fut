@@ -139,7 +139,7 @@ function App() {
               />
 
               <Route
-                path="/adicionar-treino"
+                path="/add-workout"
                 element={
                   <ProtectedRoute>
                     <AddWorkout />
